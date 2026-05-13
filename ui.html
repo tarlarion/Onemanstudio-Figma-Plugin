@@ -1,0 +1,3917 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem('pluginUiThemeV1');
+        document.documentElement.setAttribute('data-theme', t === 'dark' ? 'dark' : 'light');
+      } catch (e) {
+        document.documentElement.setAttribute('data-theme', 'light');
+      }
+    })();
+  </script>
+  <style>
+    :root {
+      /* shadcn/ui-like design tokens (light) */
+      --radius: 10px;
+      --background: #f8fafc;
+      --foreground: #0f172a;
+      --card: #ffffff;
+      --card-foreground: #0f172a;
+      --popover: #ffffff;
+      --popover-foreground: #0f172a;
+      --primary: #2563eb;
+      --primary-foreground: #ffffff;
+      --secondary: #f1f5f9;
+      --secondary-foreground: #0f172a;
+      --muted: #f1f5f9;
+      --muted-foreground: #64748b;
+      --accent: #e2e8f0;
+      --accent-foreground: #0f172a;
+      --destructive: #e03e2e;
+      --destructive-foreground: #ffffff;
+      --border: #e2e8f0;
+      --input: #e2e8f0;
+      --ring: rgba(37, 99, 235, 0.45);
+
+      /* Map existing plugin variables -> shadcn tokens */
+      --figma-color-bg: var(--background);
+      --figma-color-bg-secondary: var(--secondary);
+      --figma-color-bg-hover: #eef2ff;
+      --figma-color-bg-tertiary: #e6eaf0;
+      --figma-color-bg-brand: var(--primary);
+      --figma-color-bg-brand-hover: #1d4ed8;
+      --figma-color-bg-brand-secondary: rgba(37, 99, 235, 0.08);
+      --figma-color-text: var(--foreground);
+      --figma-color-text-secondary: var(--muted-foreground);
+      --figma-color-text-tertiary: #94a3b8;
+      --figma-color-text-onbrand: var(--primary-foreground);
+      --figma-color-text-warning: #b45309;
+      --figma-color-text-danger: var(--destructive);
+      --figma-color-text-success: #16a34a;
+      --figma-color-border: var(--border);
+      --figma-color-border-strong: #0f172a;
+      --figma-color-border-brand: #1d4ed8;
+      --figma-color-white: #ffffff;
+      --figma-color-menu-active-bg: var(--destructive);
+      --figma-color-menu-active-border: var(--destructive);
+      --figma-color-rect: var(--card);
+    }
+    html[data-theme="dark"] {
+      color-scheme: dark;
+      --background: #0f172a;
+      --foreground: #f1f5f9;
+      --card: #1e293b;
+      --card-foreground: #f1f5f9;
+      --popover: #1e293b;
+      --popover-foreground: #f1f5f9;
+      --primary: #60a5fa;
+      --primary-foreground: #0f172a;
+      --secondary: #334155;
+      --secondary-foreground: #f1f5f9;
+      --muted: #1e293b;
+      --muted-foreground: #94a3b8;
+      --accent: #334155;
+      --accent-foreground: #f8fafc;
+      --destructive: #f87171;
+      --destructive-foreground: #0f172a;
+      --border: #334155;
+      --input: #334155;
+      --ring: rgba(96, 165, 250, 0.5);
+      --figma-color-bg: var(--background);
+      --figma-color-bg-secondary: var(--secondary);
+      --figma-color-bg-hover: #3b4a63;
+      --figma-color-bg-tertiary: #1e293b;
+      --figma-color-bg-brand: var(--primary);
+      --figma-color-bg-brand-hover: #93c5fd;
+      --figma-color-bg-brand-secondary: rgba(96, 165, 250, 0.12);
+      --figma-color-text: var(--foreground);
+      --figma-color-text-secondary: var(--muted-foreground);
+      --figma-color-text-tertiary: #64748b;
+      --figma-color-text-onbrand: var(--primary-foreground);
+      --figma-color-text-warning: #fbbf24;
+      --figma-color-text-danger: var(--destructive);
+      --figma-color-text-success: #4ade80;
+      --figma-color-border: var(--border);
+      --figma-color-border-strong: #e2e8f0;
+      --figma-color-border-brand: #60a5fa;
+      --figma-color-white: #f8fafc;
+      --figma-color-menu-active-bg: var(--destructive);
+      --figma-color-menu-active-border: var(--destructive);
+      --figma-color-rect: var(--card);
+    }
+    * { box-sizing: border-box; }
+    html { color-scheme: light; }
+    body {
+      margin: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 13px;
+      line-height: 1.4;
+      color: var(--figma-color-text);
+      background: var(--figma-color-bg);
+      display: flex;
+      flex-direction: row;
+      min-height: 100%;
+      overflow: hidden;
+    }
+    body.minimized #expandedView { display: none !important; }
+    body.minimized #minimizedView { display: flex !important; width: 100%; }
+    .sidebar {
+      width: 100%;
+      flex-shrink: 0;
+      padding: 10px 10px 12px;
+      border-right: none;
+      border-top: 1px solid var(--figma-color-border);
+      background: var(--figma-color-bg-secondary);
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      gap: 4px;
+      min-height: 0;
+      order: 2; /* keep bottom navigation at the end */
+    }
+    #expandedView { display: flex; flex: 1; min-width: 0; min-height: 0; flex-direction: column; overflow: hidden; }
+    #expandedView .main { order: 1; }
+    .menu-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+      padding: 0;
+      border-radius: var(--radius);
+    }
+    .menu-item[data-panel="4"] { display: none; }
+    .menu-item:hover:not(.active) .menu-icon { color: var(--figma-color-text-secondary); }
+    .menu-item:hover:not(.active) .menu-label { color: var(--figma-color-text-secondary); }
+    .menu-item.active .menu-icon { color: var(--primary); }
+    .menu-item.active .menu-label { color: var(--figma-color-text); font-weight: 600; }
+    .menu-rect {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 4px 16px;
+      gap: 4px;
+      border: none;
+      background: transparent;
+      border-radius: 0;
+    }
+    .menu-icon {
+      width: 24px;
+      height: 24px;
+      flex-shrink: 0;
+      color: var(--figma-color-text-tertiary);
+    }
+    .menu-label {
+      font-size: 8px;
+      color: var(--figma-color-text-tertiary);
+      text-align: center;
+      line-height: 1.15;
+      max-width: 100%;
+    }
+    .main {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      padding: 14px 16px;
+      overflow: hidden;
+    }
+    .panel {
+      display: none;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
+      background: var(--figma-color-rect);
+      border: 1px solid var(--figma-color-border);
+      border-radius: var(--radius);
+      padding: 12px;
+      overflow: hidden;
+    }
+    .panel.active { display: flex; }
+    .title { font-size: 15px; font-weight: 700; margin: 0 0 10px 0; }
+    .styler-tabs { display: flex; gap: 0; margin-bottom: 12px; border-bottom: 1px solid var(--figma-color-border); }
+    .styler-tab {
+      padding: 8px 14px;
+      font-size: 12px;
+      color: var(--figma-color-text-secondary);
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      cursor: pointer;
+      border-radius: 8px 8px 0 0;
+    }
+    .styler-tab:hover { color: var(--figma-color-text); }
+    .styler-tab.active { color: var(--figma-color-text); font-weight: 600; border-bottom-color: var(--figma-color-border-strong); }
+    .styler-tab:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--ring); }
+    .styler-tab-pane { display: none; flex-direction: column; flex: 1; min-height: 0; }
+    .styler-tab-pane.active { display: flex; }
+    .panel-subtitle { font-size: 12px; color: var(--figma-color-text-secondary); margin: 0 0 12px 0; }
+    .scan-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
+    .scan-row .btn-scan { margin-bottom: 0; flex: 1; min-width: 140px; }
+    .toggle-row { display: flex; align-items: center; gap: 8px; }
+    .toggle-row label { font-size: 12px; color: var(--figma-color-text-secondary); cursor: pointer; user-select: none; }
+    .results-header { font-size: 12px; font-weight: 600; color: var(--figma-color-text); margin-bottom: 8px; }
+    .style-name.unstyled { color: var(--figma-color-text-warning); }
+    .layer-count { font-size: 11px; color: var(--figma-color-text-tertiary); flex-shrink: 0; }
+    .option-row { margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+    .option-row input { cursor: pointer; }
+    .option-row label { font-size: 12px; color: var(--figma-color-text); cursor: pointer; user-select: none; }
+    .btn-scan {
+      display: block;
+      width: 100%;
+      padding: 9px 14px;
+      margin-bottom: 12px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--figma-color-text);
+      background: var(--figma-color-bg-secondary);
+      border: 1px solid var(--figma-color-border);
+      border-radius: var(--radius);
+      cursor: pointer;
+    }
+    .btn-scan:hover:not(:disabled) { background: var(--figma-color-bg-hover); }
+    .btn-scan:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--ring); }
+    .btn-scan:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-scan-primary {
+      background: var(--figma-color-bg-brand);
+      color: var(--figma-color-white);
+      border: 1px solid var(--figma-color-border-brand);
+      border-radius: var(--radius);
+      padding: 10px 16px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .btn-scan-primary:hover:not(:disabled) {
+      background: var(--figma-color-bg-brand-hover);
+      color: var(--figma-color-white);
+      border-color: var(--figma-color-bg-brand-hover);
+    }
+    .btn-scan-primary:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--ring); }
+    .btn-paint {
+      display: block;
+      width: 100%;
+      padding: 8px 12px;
+      margin-bottom: 12px;
+      font-size: 12px;
+      color: var(--figma-color-text);
+      background: var(--figma-color-bg-secondary);
+      border: 1px solid var(--figma-color-border);
+      border-radius: var(--radius);
+      cursor: pointer;
+    }
+    .btn-paint:hover:not(:disabled) { background: var(--figma-color-bg-hover); }
+    .btn-paint:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--ring); }
+    /* shadcn-style ghost (flat): no border, no default background */
+    .btn-ghost {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 6px 10px;
+      margin: 0;
+      width: auto;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--figma-color-text);
+      background: transparent;
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .btn-ghost:hover:not(:disabled) {
+      background: var(--accent);
+      color: var(--accent-foreground);
+    }
+    .btn-ghost:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+    .btn-ghost:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 2px var(--background), 0 0 0 4px var(--ring);
+    }
+    .panel-text {
+      flex-direction: column;
+    }
+    .text-panel-body {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
+    }
+    #textMainView {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
+      overflow-x: hidden;
+      overflow-y: auto;
+      padding-right: 2px;
+    }
+    /* Make: suppress all status / error lines in the Text panel */
+    #makeStatus,
+    #makeSetupStatus {
+      display: none !important;
+      visibility: hidden !important;
+      height: 0 !important;
+      min-height: 0 !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      overflow: hidden !important;
+      pointer-events: none !important;
+    }
+    #textMakeSetupView {
+      display: none;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
+    }
+    /* One shadcn-style group: Manual | LLM (Connect Make entry point removed from UI) */
+    .text-mode-toolbar-row {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0;
+      margin-bottom: 10px;
+      width: 100%;
+    }
+    .text-mode-unified-group {
+      display: inline-flex;
+      align-items: stretch;
+      width: 100%;
+      max-width: 100%;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: var(--muted);
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+      overflow: hidden;
+    }
+    .text-mode-unified-item {
+      flex: 1 1 0;
+      min-width: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 10px;
+      font-size: 12px;
+      font-weight: 500;
+      line-height: 1.2;
+      border: none;
+      border-right: 1px solid var(--border);
+      border-radius: 0;
+      background: transparent;
+      color: var(--muted-foreground);
+      cursor: pointer;
+      font-family: inherit;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      transition: background 0.12s ease, color 0.12s ease, box-shadow 0.12s ease;
+    }
+    .text-mode-unified-item:last-child {
+      border-right: none;
+    }
+    .text-mode-unified-item:hover:not(:disabled) {
+      color: var(--foreground);
+      background: rgba(255, 255, 255, 0.45);
+    }
+    .text-mode-unified-item:focus-visible {
+      outline: none;
+      box-shadow: inset 0 0 0 2px var(--ring);
+      position: relative;
+      z-index: 1;
+    }
+    .text-mode-unified-item.text-mode-unified-toggle[aria-pressed="true"] {
+      background: var(--card);
+      color: var(--foreground);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    }
+    .text-mode-unified-item:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .text-llm-panel {
+      margin-top: 8px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--card);
+      overflow: hidden;
+    }
+    .text-llm-panel-header {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      padding: 10px 12px;
+      margin: 0;
+      border: none;
+      border-bottom: 1px solid var(--border);
+      border-radius: 0;
+      background: var(--muted);
+      color: var(--foreground);
+      font-size: 12px;
+      font-weight: 600;
+      font-family: inherit;
+      text-align: left;
+      cursor: pointer;
+      gap: 8px;
+    }
+    .text-llm-panel--collapsed .text-llm-panel-header {
+      border-bottom: none;
+    }
+    .text-llm-panel-header:hover {
+      background: var(--accent);
+      color: var(--accent-foreground);
+    }
+    .text-llm-panel-header:focus-visible {
+      outline: none;
+      box-shadow: inset 0 0 0 2px var(--ring);
+    }
+    .text-llm-panel-title {
+      flex: 1;
+      min-width: 0;
+    }
+    .text-llm-panel-chevron {
+      flex-shrink: 0;
+      font-size: 10px;
+      line-height: 1;
+      color: var(--muted-foreground);
+      transition: transform 0.15s ease;
+    }
+    .text-llm-panel--collapsed .text-llm-panel-chevron {
+      transform: rotate(-90deg);
+    }
+    .text-llm-panel-body {
+      padding: 10px 12px 12px;
+    }
+    .text-llm-panel--collapsed .text-llm-panel-body {
+      display: none;
+    }
+    .text-toolbar-row {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 8px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+    .text-toolbar-actions {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 4px;
+      flex-wrap: wrap;
+      min-width: 0;
+    }
+    .text-primary-row {
+      display: flex;
+      flex-direction: row;
+      gap: 8px;
+      margin-bottom: 8px;
+      flex-wrap: nowrap;
+    }
+    .text-primary-row .btn-scan {
+      flex: 1;
+      width: auto;
+      min-width: 0;
+      margin-bottom: 0;
+    }
+    .text-sync-row {
+      margin-bottom: 8px;
+    }
+    .text-sync-row .btn-ghost {
+      width: 100%;
+      justify-content: flex-start;
+    }
+    .text-results-scroll {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      margin-top: 4px;
+    }
+    .text-results-scroll .list-wrap-text-kv {
+      flex: 1;
+      min-height: 0;
+    }
+    #textValuesListContent .textkv-label {
+      flex: 0 1 auto;
+      min-width: 120px;
+      max-width: 45%;
+      font-size: 11px;
+      color: var(--figma-color-text-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      padding-left: 16px;
+      box-sizing: border-box;
+      cursor: default;
+    }
+    #textValuesError.text-values-error-in-scroll {
+      flex-shrink: 0;
+      margin: 0 0 8px 0;
+    }
+    .text-make-header {
+      flex-shrink: 0;
+      margin: -4px 0 8px -6px;
+    }
+    .btn-icon-back {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      padding: 0;
+      margin: 0;
+      border: none;
+      border-radius: var(--radius);
+      background: transparent;
+      color: var(--figma-color-text);
+      cursor: pointer;
+    }
+    .btn-icon-back:hover {
+      background: var(--accent);
+      color: var(--accent-foreground);
+    }
+    .btn-icon-back:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 2px var(--background), 0 0 0 4px var(--ring);
+    }
+    .text-make-form-scroll {
+      flex: 1;
+      min-height: 0;
+      overflow-x: hidden;
+      overflow-y: auto;
+      padding-right: 2px;
+    }
+    .list-wrap {
+      flex: 1;
+      min-height: 0;
+      overflow-x: hidden;
+      overflow-y: auto;
+      background: var(--figma-color-rect);
+      border: 1px solid var(--figma-color-border);
+      border-radius: var(--radius);
+    }
+    .list-empty, .list-error, .list-hint {
+      padding: 12px;
+      color: var(--figma-color-text-tertiary);
+    }
+    .list-empty-p { margin: 0 0 8px 0; }
+    .list-empty-hint { margin: 0; font-size: 11px; color: var(--figma-color-text-tertiary); line-height: 1.4; }
+    .list-error { color: var(--figma-color-text-danger); }
+    .list-hint { font-size: 11px; }
+    .list-hint a { color: var(--primary); text-decoration: underline; }
+    .list-hint a:hover { color: var(--figma-color-bg-brand-hover); }
+    .group {
+      border-bottom: 1px solid var(--figma-color-border);
+      overflow-x: hidden;
+      overflow-y: hidden;
+    }
+    .group:last-child { border-bottom: none; }
+    .group-header {
+      display: grid;
+      align-items: center;
+      column-gap: 12px;
+      row-gap: 0;
+      padding: 10px 12px;
+      cursor: pointer;
+      user-select: none;
+      min-height: 36px;
+      overflow-x: hidden;
+      /* Column widths are derived from content via CSS variables (set in JS). */
+      grid-template-columns:
+        16px /* swatch */
+        var(--col-hex, 72px)
+        var(--col-style, 140px)
+        var(--col-textstylecell, 140px)
+        var(--col-layercount, 90px);
+    }
+    .group-header:hover { background: var(--figma-color-bg-hover); }
+    .group-header .chevron { display: none; }
+    .group-header .swatch { grid-column: 1; }
+    .group-header .hex { grid-column: 2; }
+    .group-header .style-name { grid-column: 3; }
+    .group-header .text-style-cell { grid-column: 4; }
+    .group-header .layer-count { grid-column: 5; }
+    .group-header .fill-select-wrap { grid-column: 6; }
+    .group-header .text-style-cell {
+      flex-shrink: 0;
+      min-width: 90px;
+      max-width: none;
+      font-size: 10px;
+      line-height: 1.3;
+      white-space: nowrap; /* держим заголовок группы в 1 строку */
+      overflow: hidden;
+      text-overflow: clip;
+    }
+    .group-header .text-style-cell .text-style-name { font-weight: 500; color: var(--figma-color-text); }
+    .group-header .text-style-cell .text-style-meta { font-size: 9px; color: var(--figma-color-text-tertiary); }
+    .group-header .text-style-cell.text-style-mixed { color: var(--figma-color-text-tertiary); font-style: italic; }
+    .group-header .fill-select-wrap,
+    .group-header .text-style-select-wrap {
+      flex-shrink: 1;
+      min-width: 0;
+      max-width: none;
+      position: relative;
+    }
+    .group-header .fill-select-trigger {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      width: 100%;
+      padding: 4px 8px;
+      font-size: 10px;
+      border: 1px solid var(--figma-color-border);
+      border-radius: var(--radius);
+      background: var(--figma-color-rect);
+      color: var(--figma-color-text);
+      cursor: pointer;
+      text-align: left;
+    }
+    .group-header .fill-select-trigger:focus { outline: none; }
+    .group-header .fill-select-trigger:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 3px var(--ring);
+      border-color: var(--figma-color-border-brand);
+    }
+    .group-header .fill-select-trigger:hover {
+      background: var(--figma-color-bg-hover);
+      border-color: var(--figma-color-border-strong);
+      color: var(--figma-color-text);
+    }
+    .group-header .fill-select-trigger-swatch {
+      width: 12px;
+      height: 12px;
+      flex-shrink: 0;
+      border-radius: 4px;
+      border: 1px solid var(--figma-color-border);
+      background: var(--figma-color-bg-secondary);
+    }
+    .group-header .fill-select-trigger-label {
+      overflow: visible;
+      text-overflow: clip;
+      white-space: nowrap;
+      overflow: hidden; /* чтобы заголовок группы оставался в одну строку */
+      overflow-wrap: normal;
+      word-break: normal;
+    }
+    /* Выпадающие списки должны показываться, но горизонтальный скролл убираем всегда */
+    .list-wrap.dropdown-open { overflow-x: hidden; overflow-y: visible; }
+    .list-wrap.dropdown-open .group { overflow: visible; }
+    .group-header .fill-select-dropdown {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      margin-top: 2px;
+      min-width: 100%;
+      max-height: 260px;
+      overflow: auto;
+      border: 1px solid var(--figma-color-border);
+      border-radius: var(--radius);
+      background: var(--figma-color-rect);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 9999;
+    }
+    .group-header .fill-select-wrap.fill-select-open .fill-select-dropdown,
+    .group-header .text-style-select-wrap.fill-select-open .fill-select-dropdown {
+      display: block;
+    }
+    .group-header .fill-select-option {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 6px 8px;
+      font-size: 10px;
+      color: var(--figma-color-text);
+      cursor: pointer;
+    }
+    .group-header .fill-select-option:hover {
+      background: var(--figma-color-bg-hover);
+    }
+    .group-header .fill-select-option:hover .fill-select-option-label {
+      color: var(--figma-color-text);
+    }
+    .group-header .fill-select-option .fill-select-swatch {
+      width: 12px;
+      height: 12px;
+      flex-shrink: 0;
+      border-radius: 4px;
+      border: 1px solid var(--figma-color-border);
+      margin-top: 1px;
+    }
+    .group-header .fill-select-option .fill-select-swatch-keep,
+    .group-header .fill-select-option .fill-select-swatch-empty {
+      background: var(--figma-color-bg-secondary);
+    }
+    .group-header .fill-select-option-text {
+      min-width: 0;
+      flex: 1;
+    }
+    .group-header .fill-select-option-label {
+      display: block;
+      overflow: visible;
+      text-overflow: clip;
+      white-space: normal;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+    .group-header .fill-select-option-hex {
+      display: block;
+      font-size: 9px;
+      color: var(--figma-color-text-tertiary);
+      margin-top: 1px;
+      font-family: ui-monospace, monospace;
+    }
+    .group-header .fill-select-option--matches {
+      background: var(--figma-color-bg-brand-secondary);
+    }
+    .group-header .fill-select-option--matches .fill-select-option-match {
+      display: block;
+      font-size: 9px;
+      color: var(--figma-color-text-secondary);
+      margin-top: 2px;
+    }
+    .fill-select-section-label {
+      padding: 6px 8px 4px;
+      font-size: 9px;
+      font-weight: 600;
+      color: var(--figma-color-text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+      border-bottom: 1px solid var(--figma-color-border);
+      background: var(--figma-color-bg-secondary);
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+    .fill-select-section-label:first-child { border-top: none; }
+    .swatch {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+      border-radius: 4px;
+      border: 1px solid var(--figma-color-border);
+      cursor: pointer;
+    }
+    .swatch:hover { outline: 2px solid var(--figma-color-border-strong); outline-offset: 1px; }
+    .hex {
+      font-family: ui-monospace, monospace;
+      font-size: 11px;
+      color: var(--figma-color-text-secondary);
+      min-width: 72px;
+      white-space: nowrap; /* не даём переносить hex */
+      overflow: hidden;
+      text-overflow: clip;
+    }
+    .style-badge {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+      border-radius: 4px;
+      background: var(--figma-color-bg-brand);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+      color: var(--figma-color-text-onbrand);
+      font-weight: 600;
+    }
+    .style-name {
+      font-size: 11px;
+      color: var(--figma-color-text-secondary);
+      min-width: 80px;
+      max-width: none;
+      overflow: visible;
+      text-overflow: clip;
+      white-space: nowrap; /* не даём переносить подписи */
+      overflow-wrap: normal;
+      word-break: normal;
+    }
+    .group-label {
+      flex: 1;
+      min-width: 0;
+      font-size: 12px;
+      color: var(--figma-color-text);
+    }
+    .chevron {
+      /* font-size: 0 убирает смещение baseline у символа ▼,
+         сам символ рисуем через ::before */
+      font-size: 0;
+      color: transparent;
+      display: grid;
+      place-items: center; /* центрируем и по вертикали, и по горизонтали */
+      align-self: center;
+      justify-self: center;
+      width: 16px; /* совпадает с шириной первой grid-колонки под chevron */
+      height: 16px;
+      padding: 0;
+      margin: 0;
+    }
+    .chevron::before {
+      content: '';
+      font-size: 10px;
+      line-height: 1;
+      color: var(--figma-color-text-tertiary);
+      display: block;
+      transition: opacity 0.15s ease;
+    }
+    .group.collapsed .chevron::before { content: ''; }
+    .group-body {
+      border-top: 1px solid var(--figma-color-border);
+      padding: 4px 10px 8px 8px;
+      background: var(--figma-color-rect);
+    }
+    .group.collapsed .group-body { display: none; }
+    .layer-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 4px 0;
+    }
+    .layer-check {
+      width: 14px;
+      height: 14px;
+      flex-shrink: 0;
+      cursor: pointer;
+      accent-color: var(--figma-color-bg-brand);
+    }
+    .layer-check-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .layer-select-all-row {
+      display: flex;
+      align-items: center;
+      padding: 4px 0;
+      font-size: 11px;
+      color: var(--figma-color-text-secondary);
+    }
+    .layer-row .layer-name {
+      flex: 1 1 0;
+      min-width: 0;
+      overflow: visible;
+    }
+    .layer-row.selected .layer-name {
+      font-weight: 700;
+      color: var(--figma-color-bg-brand);
+    }
+    .layer-row.selected .layer-check {
+      accent-color: var(--primary);
+    }
+    .layer-row.selected .layer-selects .fill-select-trigger {
+      background: var(--figma-color-bg-brand-secondary);
+      border-color: var(--figma-color-border-brand);
+    }
+    .layer-row.selected .layer-selects .fill-select-trigger-label {
+      color: var(--figma-color-text);
+      font-weight: 600;
+    }
+    .layer-selects {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .layer-selects .fill-select-wrap,
+    .layer-selects .text-style-select-wrap {
+      width: 150px;
+      min-width: 150px;
+      position: relative;
+    }
+    /* Small selectors inside expanded rows (body). */
+    .layer-selects .fill-select-trigger {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      width: 100%;
+      padding: 3px 6px;
+      font-size: 9px;
+      border: 1px solid var(--figma-color-border);
+      border-radius: var(--radius);
+      background: var(--figma-color-rect);
+      color: var(--figma-color-text);
+      cursor: pointer;
+      text-align: left;
+    }
+    .layer-selects .fill-select-trigger:focus { outline: none; }
+    .layer-selects .fill-select-trigger:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 3px var(--ring);
+      border-color: var(--figma-color-border-brand);
+    }
+    .layer-selects .fill-select-trigger:hover {
+      background: var(--figma-color-bg-hover);
+      border-color: var(--figma-color-border-strong);
+      color: var(--figma-color-text);
+    }
+    .layer-selects .fill-select-trigger-swatch {
+      width: 10px;
+      height: 10px;
+      flex-shrink: 0;
+      border-radius: 4px;
+      border: 1px solid var(--figma-color-border);
+      background: var(--figma-color-bg-secondary);
+    }
+    .layer-selects .fill-select-trigger-label {
+      overflow: hidden;
+      text-overflow: clip;
+      white-space: nowrap;
+      overflow-wrap: normal;
+      word-break: normal;
+    }
+    .layer-selects .fill-select-dropdown {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      margin-top: 2px;
+      min-width: 100%;
+      max-height: 220px;
+      overflow: auto;
+      border: 1px solid var(--figma-color-border);
+      border-radius: var(--radius);
+      background: var(--figma-color-rect);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 9999;
+    }
+    .layer-selects .fill-select-wrap.fill-select-open .fill-select-dropdown,
+    .layer-selects .text-style-select-wrap.fill-select-open .fill-select-dropdown {
+      display: block;
+    }
+    .layer-selects .fill-select-option {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 4px 6px;
+      font-size: 9px;
+      color: var(--figma-color-text);
+      cursor: pointer;
+    }
+    .layer-selects .fill-select-option:hover { background: var(--figma-color-bg-hover); }
+    .layer-selects .fill-select-option:hover .fill-select-option-label {
+      color: var(--figma-color-text);
+    }
+    .layer-selects .fill-select-option .fill-select-swatch {
+      width: 10px;
+      height: 10px;
+      flex-shrink: 0;
+      border-radius: 4px;
+      border: 1px solid var(--figma-color-border);
+      margin-top: 1px;
+    }
+    .layer-selects .fill-select-option .fill-select-swatch-keep,
+    .layer-selects .fill-select-option .fill-select-swatch-empty {
+      background: var(--figma-color-bg-secondary);
+    }
+    .layer-selects .fill-select-option-text {
+      min-width: 0;
+      flex: 1;
+    }
+    .layer-selects .fill-select-option-label {
+      display: block;
+      overflow: hidden;
+      text-overflow: clip;
+      white-space: nowrap;
+      overflow-wrap: normal;
+      word-break: normal;
+    }
+    .layer-selects .fill-select-option-hex {
+      display: block;
+      font-size: 8px;
+      color: var(--figma-color-text-tertiary);
+      margin-top: 1px;
+      font-family: ui-monospace, monospace;
+    }
+    .layer-selects .fill-select-option--matches { background: var(--figma-color-bg-brand-secondary); }
+    .layer-selects .fill-select-option--matches .fill-select-option-match {
+      display: block;
+      font-size: 8px;
+      color: var(--figma-color-text-secondary);
+      margin-top: 1px;
+    }
+    .layer-name {
+      padding: 4px 8px;
+      cursor: pointer;
+      font-size: 11px;
+      color: var(--figma-color-text);
+      border-radius: var(--radius);
+    }
+    .layer-name:hover {
+      background: var(--figma-color-bg-hover);
+      color: var(--figma-color-bg-brand);
+    }
+    .paint-style-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--figma-color-border);
+      font-size: 12px;
+    }
+    .paint-style-row:last-child { border-bottom: none; }
+    .paint-style-name { flex: 1; min-width: 0; }
+    .cleaner-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--figma-color-border);
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .cleaner-row:hover { background: var(--figma-color-bg-hover); }
+    .cleaner-row:last-child { border-bottom: none; }
+    .cleaner-name { flex: 1 1 0; min-width: 0; overflow: visible; text-overflow: clip; white-space: normal; overflow-wrap: anywhere; word-break: break-word; }
+    .cleaner-reason { font-size: 11px; color: var(--figma-color-text-tertiary); flex-shrink: 0; }
+    .btn-delete-cleaner {
+      width: 100%;
+      padding: 8px 12px;
+      margin-bottom: 12px;
+      font-size: 12px;
+      color: var(--figma-color-text-onbrand);
+      background: var(--figma-color-text-danger);
+      border: 1px solid var(--figma-color-text-danger);
+      border-radius: var(--radius);
+      cursor: pointer;
+    }
+    .btn-delete-cleaner:hover:not(:disabled) { background: #c53030; border-color: #c53030; color: var(--figma-color-text-onbrand); }
+    .btn-delete-cleaner:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-delete-cleaner:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--ring); }
+    .cleaner-row input { cursor: pointer; flex-shrink: 0; }
+    .detach-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .detach-row .detach-name { flex: 1 1 0; min-width: 0; overflow: visible; text-overflow: clip; white-space: normal; overflow-wrap: anywhere; word-break: break-word; }
+    .detach-row .detach-source { font-size: 11px; color: var(--figma-color-text-tertiary); flex-shrink: 0; }
+    .detach-row .detach-select-wrap { min-width: 140px; max-width: 200px; flex-shrink: 0; }
+    .detach-row select {
+      width: 100%;
+      padding: 7px 10px;
+      font-size: 12px;
+      border: 1px solid var(--figma-color-border);
+      border-radius: var(--radius);
+      background: var(--figma-color-rect);
+      color: var(--figma-color-text);
+      cursor: pointer;
+    }
+    .parse-components-section { margin-bottom: 12px; }
+    .parse-components-section:last-child { margin-bottom: 0; }
+    .parse-component-row[data-id] { cursor: pointer; }
+
+    /* Detach seek: hide "Parse components" UI, keep logic */
+    #btnParseComponents { display: none; }
+    #detachDebug { display: none; }
+    .parse-components-section { display: none; }
+    .parse-component-row { display: none; }
+    .list-empty-p { margin: 8px 0; }
+    .cleaner-select-all-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--figma-color-border);
+      font-size: 12px;
+      font-weight: 600;
+      background: var(--figma-color-bg-secondary);
+    }
+    .cleaner-select-all-row input { cursor: pointer; }
+    .rewriter-section { margin-bottom: 16px; }
+    .rewriter-subtitle { font-size: 12px; font-weight: 600; margin: 0 0 8px 0; color: var(--figma-color-text-secondary); }
+    .rewriter-switch-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+      padding: 10px 12px;
+      border-radius: var(--radius);
+      border: 1px solid var(--figma-color-border);
+      background: var(--figma-color-rect);
+    }
+    .rewriter-switch-copy { flex: 1; min-width: 0; }
+    .rewriter-switch-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--figma-color-text);
+      line-height: 1.35;
+      cursor: pointer;
+    }
+    .rewriter-switch-hint {
+      margin: 4px 0 0 0;
+      font-size: 11px;
+      line-height: 1.35;
+      color: var(--figma-color-text-secondary);
+    }
+    .shadcn-switch {
+      position: relative;
+      flex-shrink: 0;
+      width: 36px;
+      height: 20px;
+      margin-top: 1px;
+      border-radius: 9999px;
+      border: none;
+      background: var(--input);
+      cursor: pointer;
+      padding: 0;
+      transition: background-color 0.15s ease;
+    }
+    .shadcn-switch[aria-checked="true"] {
+      background: var(--primary);
+    }
+    .shadcn-switch:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 3px var(--ring);
+    }
+    .shadcn-switch-thumb {
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 16px;
+      height: 16px;
+      border-radius: 9999px;
+      background: var(--figma-color-white);
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.12);
+      transition: transform 0.15s ease;
+      pointer-events: none;
+    }
+    .shadcn-switch[aria-checked="true"] .shadcn-switch-thumb {
+      transform: translateX(16px);
+    }
+    #minimizedView { display: none; padding: 8px 12px; align-items: center; justify-content: space-between; gap: 8px; min-height: 100%; box-sizing: border-box; }
+    #minimizedView .minimized-title { font-size: 12px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    #minimizedView .btn-expand { padding: 4px 8px; font-size: 11px; cursor: pointer; border-radius: var(--radius); border: 1px solid var(--figma-color-border); background: var(--figma-color-rect); color: var(--figma-color-text); display: flex; align-items: center; gap: 6px; }
+    #minimizedView .btn-expand:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--ring); }
+    #minimizedView .btn-expand:hover { background: var(--figma-color-bg-hover); }
+    .menu-item-minimize { margin-top: 0; }
+    .menu-item-minimize .menu-label { font-size: 9px; }
+    .sidebar-trailing {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 6px;
+      margin-left: auto;
+      flex-shrink: 0;
+    }
+    .theme-switcher {
+      display: inline-flex;
+      align-items: stretch;
+      border-radius: var(--radius);
+      border: 1px solid var(--figma-color-border);
+      background: var(--figma-color-bg);
+      overflow: hidden;
+    }
+    .theme-switch-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 30px;
+      padding: 0;
+      margin: 0;
+      border: none;
+      border-right: 1px solid var(--figma-color-border);
+      border-radius: 0;
+      background: transparent;
+      color: var(--figma-color-text-tertiary);
+      cursor: pointer;
+    }
+    .theme-switch-btn:last-child { border-right: none; }
+    .theme-switch-btn:hover { color: var(--figma-color-text); background: var(--figma-color-bg-hover); }
+    .theme-switch-btn:focus-visible { outline: none; box-shadow: inset 0 0 0 2px var(--ring); z-index: 1; position: relative; }
+    .theme-switch-btn[aria-pressed="true"] {
+      color: var(--primary);
+      background: var(--figma-color-bg-brand-secondary);
+    }
+    .theme-switch-btn svg { width: 16px; height: 16px; display: block; }
+    .menu-item-minimize .menu-rect .menu-label { font-size: 9px; }
+
+    /* Frame Name: hide refresh count button, keep label/count */
+    #btnRefreshFramesCount { display: none; }
+    .variable-collection { margin-bottom: 8px; }
+    .variable-collection-name { font-weight: 600; font-size: 11px; color: var(--figma-color-text-secondary); margin-bottom: 4px; }
+    .variable-item { font-size: 11px; padding: 2px 0; color: var(--figma-color-text); }
+    .components-stats {
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      background: var(--figma-color-bg-secondary);
+      border: 1px solid var(--figma-color-border);
+      border-radius: var(--radius);
+      font-size: 12px;
+    }
+    .components-stats-summary { font-weight: 600; margin-bottom: 6px; color: var(--figma-color-text); }
+    .components-stats-usage { font-size: 11px; color: var(--figma-color-text-secondary); }
+    .components-stats-usage span { display: inline-block; margin-right: 8px; margin-bottom: 2px; }
+    .resize-handle {
+      position: fixed;
+      right: 0;
+      bottom: 0;
+      width: 16px;
+      height: 16px;
+      cursor: nwse-resize;
+      z-index: 100;
+      background: linear-gradient(135deg, transparent 50%, var(--figma-color-border) 50%);
+      border-top: 1px solid var(--figma-color-border);
+      border-left: 1px solid var(--figma-color-border);
+      border-radius: 4px 0 0 0;
+    }
+    .resize-handle:hover { border-color: var(--figma-color-border-strong); background: linear-gradient(135deg, transparent 50%, var(--figma-color-border-strong) 50%); }
+    body.minimized .resize-handle { display: none; }
+  </style>
+</head>
+<body>
+  <div id="minimizedView">
+    <span class="minimized-title">Styler</span>
+    <button type="button" class="btn-expand" id="btnExpand">
+      <svg class="btn-expand-icon" width="16" height="16" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="transform: rotate(180deg);">
+        <path fill-rule="evenodd" clip-rule="evenodd" d="M2 12C2 7.28595 2 4.92893 3.46447 3.46447C4.92893 2 7.28595 2 12 2C16.714 2 19.0711 2 20.5355 3.46447C22 4.92893 22 7.28595 22 12C22 16.714 22 19.0711 20.5355 20.5355C19.0711 22 16.714 22 12 22C7.28595 22 4.92893 22 3.46447 20.5355C2 19.0711 2 16.714 2 12ZM6.46967 17.5303C6.17678 17.2374 6.17678 16.7626 6.46967 16.4697L8.68934 14.25H7.5C7.08579 14.25 6.75 13.9142 6.75 13.5C6.75 13.0858 7.08579 12.75 7.5 12.75H10.5C10.9142 12.75 11.25 13.0858 11.25 13.5V16.5C11.25 16.9142 10.9142 17.25 10.5 17.25C10.0858 17.25 9.75 16.9142 9.75 16.5V15.3107L7.53033 17.5303C7.23744 17.8232 6.76256 17.8232 6.46967 17.5303ZM16.5 11.25C16.9142 11.25 17.25 10.9142 17.25 10.5C17.25 10.0858 16.9142 9.75 16.5 9.75H15.3107L17.5303 7.53033C17.8232 7.23744 17.8232 6.76256 17.5303 6.46967C17.2374 6.17678 16.7626 6.17678 16.4697 6.46967L14.25 8.68934V7.5C14.25 7.08579 13.9142 6.75 13.5 6.75C13.0858 6.75 12.75 7.08579 12.75 7.5V10.5C12.75 10.9142 13.0858 11.25 13.5 11.25H16.5Z" fill="currentColor"/>
+      </svg>
+      <span>Expand</span>
+    </button>
+  </div>
+  <div id="expandedView">
+  <nav class="sidebar">
+    <div class="menu-item active" data-panel="0" title="Styler">
+      <div class="menu-rect"><span class="menu-icon"><svg width="24" height="24" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M3.2261 2L0.11499 14H2.18111L2.95889 11H6.04092L6.81869 14H8.88482L5.77371 2H3.2261ZM5.5224 9L4.4999 5.05609L3.47741 9H5.5224Z" fill="currentColor"/><path fill-rule="evenodd" clip-rule="evenodd" d="M14 7.33682C13.5454 7.12085 13.0368 7 12.5 7C10.567 7 9.00004 8.567 9.00004 10.5C9.00004 12.433 10.567 14 12.5 14C13.0368 14 13.5454 13.8792 14 13.6632V14H16V7H14V7.33682ZM11 10.5C11 9.67157 11.6716 9 12.5 9C13.3285 9 14 9.67157 14 10.5C14 11.3284 13.3285 12 12.5 12C11.6716 12 11 11.3284 11 10.5Z" fill="currentColor"/></svg></span><span class="menu-label">Styler</span></div>
+    </div>
+    <div class="menu-item" data-panel="5" title="Text">
+      <div class="menu-rect"><span class="menu-icon"><svg width="24" height="24" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M2.5 2.5C2.5 1.94772 2.94772 1.5 3.5 1.5H12.5C13.0523 1.5 13.5 1.94772 13.5 2.5C13.5 3.05228 13.0523 3.5 12.5 3.5H9V13.5C9 14.0523 8.55228 14.5 8 14.5C7.44772 14.5 7 14.0523 7 13.5V3.5H3.5C2.94772 3.5 2.5 3.05228 2.5 2.5Z" fill="currentColor"/></svg></span><span class="menu-label">Text</span></div>
+    </div>
+    <div class="menu-item" data-panel="1" title="Cleaner">
+      <div class="menu-rect"><span class="menu-icon"><svg width="24" height="24" viewBox="0 0 533.3 533.3" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M214.795 324.599H318.504C325.688 324.599 332.07 321.788 336.014 316.885C339.568 312.468 340.825 306.843 339.555 301.047C337.017 289.481 325.055 278.291 312.323 275.572C312.087 275.521 310.779 275.244 308.707 274.831C306.935 274.479 301.904 273.425 301.904 268.425V262.413C301.904 254.081 296.779 246.928 289.517 243.928C287.832 243.232 284.15 242.05 284.15 238.425V17.5C284.15 7.835 276.315 0 266.65 0C256.985 0 249.15 7.835 249.15 17.5V238.425C249.15 241.55 245.106 243.329 243.275 244.145C236.282 247.262 231.395 254.276 231.395 262.414V269.426C231.395 273.176 227.299 274.303 225.707 274.615C222.992 275.145 221.254 275.514 220.977 275.574C208.245 278.293 196.283 289.482 193.745 301.049C192.474 306.844 193.732 312.469 197.286 316.886C201.229 321.787 207.612 324.599 214.795 324.599Z" fill="currentColor"/><path d="M382.631 497.455L354.656 369.911C351.82 356.972 338.735 346.445 325.488 346.445H207.811C194.564 346.445 181.479 356.971 178.643 369.91L150.668 497.456C149.223 504.048 150.508 510.603 154.287 515.914C158.065 521.224 163.838 524.587 170.539 525.382C173.265 525.705 237.622 533.297 266.509 533.3H266.531C266.533 533.3 266.53 533.3 266.53 533.3C295.502 533.3 360.025 525.702 362.758 525.379C369.459 524.585 375.232 521.224 379.011 515.914C382.791 510.603 384.077 504.049 382.631 497.455Z" fill="currentColor"/></svg></span><span class="menu-label">Cleaner</span></div>
+    </div>
+    <div class="menu-item" data-panel="2" title="Frame Name">
+      <div class="menu-rect"><span class="menu-icon"><svg width="24" height="24" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M6 15V12H10V15H12V12H15V10H12V6H15V4H12V1H10V4H6V1H4V4H1V6H4V10H1V12H4V15H6ZM10 10H6V6H10V10Z" fill="currentColor"/></svg></span><span class="menu-label">Frame Name</span></div>
+    </div>
+    <div class="menu-item" data-panel="3" title="Detach seek">
+      <div class="menu-rect"><span class="menu-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M13.4142 3.8284C12.6332 3.04735 11.3668 3.04735 10.5858 3.8284L3.82843 10.5858C3.04738 11.3668 3.04738 12.6331 3.82843 13.4142L10.5858 20.1715C11.3668 20.9526 12.6332 20.9526 13.4142 20.1715L20.1716 13.4142C20.9526 12.6331 20.9526 11.3668 20.1716 10.5858L13.4142 3.8284ZM9.17157 2.41419C10.7337 0.852088 13.2663 0.852092 14.8284 2.41419L21.5858 9.17155C23.1479 10.7336 23.1479 13.2663 21.5858 14.8284L14.8284 21.5858C13.2663 23.1479 10.7337 23.1479 9.17157 21.5858L2.41421 14.8284C0.852115 13.2663 0.852119 10.7336 2.41422 9.17154L9.17157 2.41419ZM13.25 15.75C13.25 16.4404 12.6904 17 12 17C11.3096 17 10.75 16.4404 10.75 15.75C10.75 15.0596 11.3096 14.5 12 14.5C12.6904 14.5 13.25 15.0596 13.25 15.75ZM13 7C13 6.44772 12.5523 6 12 6C11.4477 6 11 6.44772 11 7V12C11 12.5523 11.4477 13 12 13C12.5523 13 13 12.5523 13 12V7Z" fill="currentColor"/></svg></span><span class="menu-label">Detach seek</span></div>
+    </div>
+    <div class="menu-item" data-panel="4" title="Comments">
+      <div class="menu-rect"><span class="menu-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></span><span class="menu-label">Comments</span></div>
+    </div>
+    <div class="sidebar-trailing">
+      <div class="theme-switcher" role="group" aria-label="Color theme">
+        <button type="button" class="theme-switch-btn" id="btnThemeLight" title="Light theme" aria-label="Light theme" aria-pressed="true">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M12 18C15.3137 18 18 15.3137 18 12C18 8.68629 15.3137 6 12 6C8.68629 6 6 8.68629 6 12C6 15.3137 8.68629 18 12 18Z" stroke="currentColor" stroke-width="2"/><path d="M12 2V4M12 20V22M4 12H2M22 12H20M19.07 4.93L17.66 6.34M6.34 17.66L4.93 19.07M19.07 19.07L17.66 17.66M6.34 6.34L4.93 4.93" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+        <button type="button" class="theme-switch-btn" id="btnThemeDark" title="Night theme" aria-label="Night theme" aria-pressed="false">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+    <div class="menu-item menu-item-minimize" id="menuMinimize" title="Minimize plugin">
+      <div class="menu-rect"><span class="menu-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M2 12C2 7.28595 2 4.92893 3.46447 3.46447C4.92893 2 7.28595 2 12 2C16.714 2 19.0711 2 20.5355 3.46447C22 4.92893 22 7.28595 22 12C22 16.714 22 19.0711 20.5355 20.5355C19.0711 22 16.714 22 12 22C7.28595 22 4.92893 22 3.46447 20.5355C2 19.0711 2 16.714 2 12ZM6.46967 17.5303C6.17678 17.2374 6.17678 16.7626 6.46967 16.4697L8.68934 14.25H7.5C7.08579 14.25 6.75 13.9142 6.75 13.5C6.75 13.0858 7.08579 12.75 7.5 12.75H10.5C10.9142 12.75 11.25 13.0858 11.25 13.5V16.5C11.25 16.9142 10.9142 17.25 10.5 17.25C10.0858 17.25 9.75 16.9142 9.75 16.5V15.3107L7.53033 17.5303C7.23744 17.8232 6.76256 17.8232 6.46967 17.5303ZM16.5 11.25C16.9142 11.25 17.25 10.9142 17.25 10.5C17.25 10.0858 16.9142 9.75 16.5 9.75H15.3107L17.5303 7.53033C17.8232 7.23744 17.8232 6.76256 17.5303 6.46967C17.2374 6.17678 16.7626 6.17678 16.4697 6.46967L14.25 8.68934V7.5C14.25 7.08579 13.9142 6.75 13.5 6.75C13.0858 6.75 12.75 7.08579 12.75 7.5V10.5C12.75 10.9142 13.0858 11.25 13.5 11.25H16.5Z" fill="currentColor"/></svg></span><span class="menu-label">Min</span></div>
+    </div>
+    </div>
+  </nav>
+  <main class="main">
+    <div id="panel-0" class="panel active">
+      <h2 class="title">Styler</h2>
+      <div class="styler-tabs">
+        <button type="button" class="styler-tab active" data-styler-tab="text">Text</button>
+        <button type="button" class="styler-tab" data-styler-tab="layers">Layers</button>
+      </div>
+      <div id="styler-pane-text" class="styler-tab-pane active">
+        <p class="panel-subtitle">Detect unlinked text color styles</p>
+        <div class="scan-row">
+          <button class="btn-scan btn-scan-primary" id="btnScan">Scan unlinked color styles</button>
+        </div>
+        <div id="resultsHeader" class="results-header" style="display: none;"></div>
+        <div id="listWrap" class="list-wrap">
+          <div id="listContent" class="list-hint">Select a frame or group, then press Scan.</div>
+        </div>
+      </div>
+      <div id="styler-pane-layers" class="styler-tab-pane">
+        <p class="panel-subtitle">Layers (frames, groups, shapes — not text)</p>
+        <div class="scan-row">
+          <button class="btn-scan btn-scan-primary" id="btnScanLayers">Scan fill colors</button>
+        </div>
+        <div id="layersResultsHeader" class="results-header" style="display: none;"></div>
+        <div id="layersListWrap" class="list-wrap">
+          <div id="layersListContent" class="list-hint">Select a frame or group, then press Scan to list layers by fill (style, variable, or local color).</div>
+        </div>
+      </div>
+    </div>
+    <div id="panel-1" class="panel">
+      <h2 class="title">Cleaner</h2>
+      <p class="list-hint" style="margin-bottom: 12px;">Select a frame, then press the button to find empty frames/groups, hidden layers, and layers with opacity 0 or empty fill and stroke.</p>
+      <button class="btn-scan" id="btnFindEmpty">Find empty elements</button>
+      <button class="btn-delete-cleaner" id="btnDeleteCleaner" disabled style="display: none;">Delete</button>
+      <div id="cleanerListWrap" class="list-wrap">
+        <div id="cleanerListContent" class="list-hint">Select a frame and press «Find empty elements».</div>
+      </div>
+    </div>
+    <div id="panel-2" class="panel">
+      <h2 class="title">Frame Name</h2>
+      <div class="rewriter-section">
+        <h3 class="rewriter-subtitle">Rename frames</h3>
+        <p class="list-hint" style="margin-bottom: 8px;">Select frames. Each name is prefix plus a number (e.g. Frame-01, Frame-02). Prefix: letters only.</p>
+        <div class="rewriter-switch-row">
+          <div class="rewriter-switch-copy">
+            <label class="rewriter-switch-label" for="rewriterLayerOrderSwitch">Reverse layer panel order</label>
+            <p class="rewriter-switch-hint">When off (default), order follows canvas position (top → bottom, left → right). When on, order follows the Layers panel bottom → top (reverse of the list).</p>
+          </div>
+          <button type="button" id="rewriterLayerOrderSwitch" class="shadcn-switch" role="switch" aria-checked="false" aria-label="Reverse layer panel order (bottom to top)">
+            <span class="shadcn-switch-thumb" aria-hidden="true"></span>
+          </button>
+        </div>
+        <button type="button" class="btn-paint" id="btnRefreshFramesCount" style="margin-bottom: 8px;">Refresh count</button>
+        <p id="rewriterError" class="list-error" style="display: none; margin-bottom: 8px;"></p>
+        <div id="rewriterPrefixRow" class="option-row" style="margin-bottom: 8px; flex-direction: column; align-items: flex-start; gap: 6px;">
+          <label for="rewriterPrefix">Prefix</label>
+          <input type="text" id="rewriterPrefix" maxlength="20" placeholder="e.g. Frame" style="flex: 1; padding: 8px 10px; border: 1px solid var(--figma-color-border); border-radius: var(--radius); background: var(--figma-color-rect); color: var(--figma-color-text);" />
+        </div>
+        <button class="btn-scan" id="btnRenameFrames" disabled>Rename frames</button>
+      </div>
+    </div>
+    <div id="panel-3" class="panel">
+      <h2 class="title">Detach seek</h2>
+      <p class="list-hint" style="margin-bottom: 12px;">Select a frame or section, then press the button to find detached components. Pick a library component to replace each, then press «Change detached».</p>
+      <button class="btn-scan" id="btnFindDetached">Find detached</button>
+      <button class="btn-paint" id="btnParseComponents" style="margin-top: 8px;">Parse components</button>
+      <button class="btn-scan btn-delete-cleaner" id="btnReplaceDetached" disabled style="display: none; margin-top: 8px;">Change detached</button>
+      <button class="btn-scan btn-delete-cleaner" id="btnReplaceLocalWithLibrary" disabled style="display: none; margin-top: 8px;">Replace with library</button>
+      <div id="detachListWrap" class="list-wrap" style="margin-top: 12px;">
+        <div id="detachListContent" class="list-hint">Select a frame or section and press «Find detached».</div>
+      </div>
+      <div id="detachDebug" class="list-hint" style="margin-top: 8px; font-size: 10px; color: var(--figma-color-text-tertiary); min-height: 14px;"></div>
+    </div>
+    <div id="panel-4" class="panel">
+      <h2 class="title">Comments</h2>
+      <p class="list-hint" style="margin-bottom: 12px;">Enter your Figma Personal Access Token for REST API access to comments.</p>
+      <div class="option-row" style="margin-bottom: 12px;">
+        <label for="figmaToken" style="min-width: 80px;">Token</label>
+        <input type="password" id="figmaToken" placeholder="figd_…" autocomplete="off"
+          style="flex: 1; padding: 8px 10px; border: 1px solid var(--figma-color-border); border-radius: var(--radius); background: var(--figma-color-rect); color: var(--figma-color-text); font-size: 12px;" />
+      </div>
+      <div class="option-row" style="margin-bottom: 12px;">
+        <label for="figmaFileKey" style="min-width: 80px;">File key</label>
+        <input type="text" id="figmaFileKey" placeholder="From URL: figma.com/file/THIS_PART/…" autocomplete="off"
+          style="flex: 1; padding: 8px 10px; border: 1px solid var(--figma-color-border); border-radius: var(--radius); background: var(--figma-color-rect); color: var(--figma-color-text); font-size: 12px;" />
+      </div>
+      <p class="list-hint" style="margin-bottom: 12px; font-size: 11px;">If «Grab comments» says file key not available, copy the key from the browser tab URL (the part after /file/ or /design/).</p>
+      <button class="btn-scan" id="btnFigmaAuth" style="margin-bottom: 8px;">Authorize</button>
+      <button class="btn-scan" id="btnGrabComments" style="margin-bottom: 12px; margin-left: 8px;">Grab comments</button>
+      <div id="figmaAuthMessage" class="list-hint" style="min-height: 20px;"></div>
+      <div id="commentsListWrap" class="list-wrap" style="margin-top: 12px;">
+        <div id="commentsListContent" class="list-hint">Click «Grab comments» to load comments on the current page.</div>
+      </div>
+    </div>
+    <div id="panel-5" class="panel panel-text">
+      <h2 class="title">Text</h2>
+      <div class="text-panel-body">
+      <div id="textMainView">
+        <p class="list-hint" style="margin-bottom: 12px;">Select a frame. Extracts all TEXT layers (descendants) and lets you edit their contents.</p>
+        <div class="text-mode-toolbar-row">
+          <div class="text-mode-unified-group" role="group" aria-label="Text mode">
+            <button type="button" class="text-mode-unified-item text-mode-unified-toggle" id="btnTextModeManual" aria-pressed="true">Manual mode</button>
+            <button type="button" class="text-mode-unified-item text-mode-unified-toggle" id="btnTextModeLlm" aria-pressed="false">LLM mode</button>
+          </div>
+        </div>
+        <div class="text-toolbar-row">
+          <div class="text-toolbar-actions">
+            <button type="button" class="btn-ghost" id="btnExportTextCsv" disabled>Export CSV</button>
+            <button type="button" class="btn-ghost" id="btnExportTextJson" disabled>Export JSON</button>
+            <button type="button" class="btn-ghost" id="btnImportTextData">Import</button>
+          </div>
+        </div>
+        <div class="text-primary-row">
+          <button type="button" class="btn-scan btn-scan-primary" id="btnExtractTextValues">Extract text values</button>
+          <button type="button" class="btn-scan btn-scan-primary" id="btnApplyTextValues" disabled>Apply changes</button>
+        </div>
+        <div class="text-sync-row">
+          <button type="button" class="btn-ghost" id="btnSyncTextToMake" disabled>Sync current text to Make</button>
+        </div>
+        <div id="textLlmSection" class="text-llm-panel" style="display: none;">
+          <button type="button" class="text-llm-panel-header" id="textLlmSectionToggle" aria-expanded="true" aria-controls="textLlmSectionBody">
+            <span class="text-llm-panel-title">LLM settings</span>
+            <span class="text-llm-panel-chevron" aria-hidden="true">▼</span>
+          </button>
+          <div id="textLlmSectionBody" class="text-llm-panel-body">
+          <p class="list-hint" style="margin-bottom: 8px;">Optional: use <a href="https://openrouter.ai/" target="_blank" rel="noopener noreferrer">OpenRouter</a> to suggest semantic keys from the frame screenshot and current text values.</p>
+          <div style="display: grid; grid-template-columns: 1fr; gap: 8px;">
+            <input id="openRouterApiKey" type="password" placeholder="OpenRouter API key" style="width: 100%; padding: 8px 10px; border: 1px solid var(--figma-color-border); border-radius: var(--radius); background: var(--figma-color-rect); color: var(--figma-color-text);" />
+            <input id="openRouterModel" type="text" value="openai/gpt-4o-mini" placeholder="Model id (e.g. openai/gpt-4o-mini)" style="width: 100%; padding: 8px 10px; border: 1px solid var(--figma-color-border); border-radius: var(--radius); background: var(--figma-color-rect); color: var(--figma-color-text);" />
+          </div>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px;">
+            <button type="button" class="btn-ghost" id="btnSaveOpenRouterSettings">Save OpenRouter settings</button>
+            <button type="button" class="btn-scan" id="btnGenerateSemanticKeys" disabled>Generate semantic keys</button>
+          </div>
+          <p id="llmStatus" class="list-hint" style="margin-top: 8px; margin-bottom: 0; min-height: 16px;"></p>
+          </div>
+        </div>
+        <p id="makeStatus" class="list-hint" style="display: none; margin-top: 0; margin-bottom: 0;"></p>
+        <div class="text-results-scroll">
+          <p id="textValuesError" class="list-error text-values-error-in-scroll" style="display: none;"></p>
+          <div id="textValuesListWrap" class="list-wrap list-wrap-text-kv">
+            <div id="textValuesListContent" class="list-hint">Select a frame and press Extract.</div>
+          </div>
+        </div>
+      </div>
+      <div id="textMakeSetupView">
+        <div class="text-make-header">
+          <button type="button" class="btn-icon-back" id="btnBackFromMakeSetup" aria-label="Back to text" title="Back">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+        <div class="text-make-form-scroll">
+        <p class="list-hint" style="margin-bottom: 10px;">Choose a scenario for this plugin user. Make will route rows by <code>scenario_key</code> and update the specified Google Sheet.</p>
+        <div class="option-row" style="margin-bottom: 10px; flex-direction: column; align-items: flex-start; gap: 6px;">
+          <label for="makeScenarioSelect">Saved scenarios</label>
+          <select id="makeScenarioSelect" style="width: 100%; padding: 8px 10px; border: 1px solid var(--figma-color-border); border-radius: var(--radius); background: var(--figma-color-rect); color: var(--figma-color-text); font-size: 12px;">
+            <option value="">No scenarios yet</option>
+          </select>
+        </div>
+        <div class="option-row" style="margin-bottom: 10px; flex-direction: column; align-items: flex-start; gap: 6px;">
+          <label for="makeScenarioName">Scenario name</label>
+          <input id="makeScenarioName" type="text" placeholder="Marketing EN" style="width: 100%; padding: 8px 10px; border: 1px solid var(--figma-color-border); border-radius: var(--radius); background: var(--figma-color-rect); color: var(--figma-color-text);" />
+        </div>
+        <div class="option-row" style="margin-bottom: 10px; flex-direction: column; align-items: flex-start; gap: 6px;">
+          <label for="makeWebhookUrl">Make webhook URL</label>
+          <input id="makeWebhookUrl" type="text" placeholder="https://hook.make.com/..." style="width: 100%; padding: 8px 10px; border: 1px solid var(--figma-color-border); border-radius: var(--radius); background: var(--figma-color-rect); color: var(--figma-color-text);" />
+        </div>
+        <div class="option-row" style="margin-bottom: 10px; flex-direction: column; align-items: flex-start; gap: 6px;">
+          <label for="makeScenarioKey">Scenario key (routing)</label>
+          <input id="makeScenarioKey" type="text" placeholder="marketing-copy" style="width: 100%; padding: 8px 10px; border: 1px solid var(--figma-color-border); border-radius: var(--radius); background: var(--figma-color-rect); color: var(--figma-color-text);" />
+        </div>
+        <div class="option-row" style="margin-bottom: 10px; flex-direction: column; align-items: flex-start; gap: 6px;">
+          <label for="makeTargetSheetId">Target Google Sheet ID</label>
+          <input id="makeTargetSheetId" type="text" placeholder="1AbCdEf..." style="width: 100%; padding: 8px 10px; border: 1px solid var(--figma-color-border); border-radius: var(--radius); background: var(--figma-color-rect); color: var(--figma-color-text);" />
+        </div>
+        <div class="option-row" style="margin-bottom: 10px; flex-direction: column; align-items: flex-start; gap: 6px;">
+          <label for="makeTargetSheetTab">Target sheet tab (optional)</label>
+          <input id="makeTargetSheetTab" type="text" placeholder="Sheet1" style="width: 100%; padding: 8px 10px; border: 1px solid var(--figma-color-border); border-radius: var(--radius); background: var(--figma-color-rect); color: var(--figma-color-text);" />
+        </div>
+        <div class="option-row" style="margin-bottom: 10px; flex-direction: column; align-items: flex-start; gap: 6px;">
+          <label for="makeSharedSecret">Shared secret (optional)</label>
+          <input id="makeSharedSecret" type="password" placeholder="for signature validation in Make" style="width: 100%; padding: 8px 10px; border: 1px solid var(--figma-color-border); border-radius: var(--radius); background: var(--figma-color-rect); color: var(--figma-color-text);" />
+        </div>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px;">
+          <button class="btn-scan" id="btnSaveMakeScenario" style="margin-bottom: 0;">Save scenario</button>
+          <button class="btn-paint" id="btnSetDefaultMakeScenario" style="margin-bottom: 0;">Set default</button>
+          <button class="btn-paint" id="btnDeleteMakeScenario" style="margin-bottom: 0;">Delete</button>
+        </div>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px;">
+          <button class="btn-scan" id="btnTestMakeConnection" style="margin-bottom: 0;">Test connection</button>
+        </div>
+        <p id="makeSetupStatus" class="list-hint" style="display: none; margin: 0; padding: 0; min-height: 0;"></p>
+        </div>
+      </div>
+      <input type="file" id="textImportFileInput" accept=".csv,.json,text/csv,application/json" style="display: none;" />
+      </div>
+    </div>
+  </main>
+  </div>
+
+  <script>
+    function escapeHtml(s) {
+      var d = document.createElement('div');
+      d.textContent = s;
+      return d.innerHTML;
+    }
+    function colorToCss(g) {
+      if (!g) return 'var(--figma-color-bg-tertiary)';
+      if (g.colorHex === 'No fill') return 'var(--figma-color-bg-tertiary)';
+      if (g.color && typeof g.color.r === 'number') {
+        var r = Math.round((g.color.r || 0) * 255);
+        var g_ = Math.round((g.color.g || 0) * 255);
+        var b = Math.round((g.color.b || 0) * 255);
+        return 'rgb(' + r + ',' + g_ + ',' + b + ')';
+      }
+      if (g.colorHex && g.colorHex.indexOf('rgba') === 0) return g.colorHex;
+      if (g.colorHex && g.colorHex.indexOf('#') === 0) return g.colorHex;
+      return 'var(--figma-color-bg-tertiary)';
+    }
+    function normalizeColorForCompare(hexStr) {
+      if (!hexStr || typeof hexStr !== 'string') return '';
+      var s = hexStr.trim();
+      if (s.indexOf('#') === 0) {
+        s = s.slice(1).toLowerCase();
+        if (s.length === 3) s = s[0] + s[0] + s[1] + s[1] + s[2] + s[2];
+        return '#' + s;
+      }
+      var rgba = s.match(/rgba?\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)(?:\s*,\s*[\d.]+)?\s*\)/);
+      if (rgba) {
+        var r = parseInt(rgba[1], 10); var g = parseInt(rgba[2], 10); var b = parseInt(rgba[3], 10);
+        return '#' + [r, g, b].map(function (x) { return ('0' + Math.max(0, Math.min(255, x)).toString(16)).slice(-2); }).join('');
+      }
+      return s;
+    }
+
+    var listContent = document.getElementById('listContent');
+    var listWrap = document.getElementById('listWrap');
+
+    var stylesAndVariables = { paintStyles: [], textStyles: [], variables: [] };
+    var stylesAndVariablesRequested = false;
+    function requestStylesAndVariables() {
+      if (stylesAndVariablesRequested) return;
+      stylesAndVariablesRequested = true;
+      parent.postMessage({ pluginMessage: { type: 'getStylesAndVariables' } }, '*');
+    }
+    requestStylesAndVariables();
+
+    var PLUGIN_UI_THEME_KEY = 'pluginUiThemeV1';
+    var btnThemeLight = document.getElementById('btnThemeLight');
+    var btnThemeDark = document.getElementById('btnThemeDark');
+
+    function getUiTheme() {
+      var t = document.documentElement.getAttribute('data-theme');
+      return t === 'dark' ? 'dark' : 'light';
+    }
+
+    function setUiTheme(theme) {
+      var next = theme === 'dark' ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', next);
+      try { localStorage.setItem(PLUGIN_UI_THEME_KEY, next); } catch (_) {}
+      syncThemeSwitcherButtons();
+    }
+
+    function syncThemeSwitcherButtons() {
+      var dark = getUiTheme() === 'dark';
+      if (btnThemeLight) btnThemeLight.setAttribute('aria-pressed', dark ? 'false' : 'true');
+      if (btnThemeDark) btnThemeDark.setAttribute('aria-pressed', dark ? 'true' : 'false');
+    }
+
+    if (btnThemeLight) {
+      btnThemeLight.onclick = function (e) {
+        e.stopPropagation();
+        setUiTheme('light');
+      };
+    }
+    if (btnThemeDark) {
+      btnThemeDark.onclick = function (e) {
+        e.stopPropagation();
+        setUiTheme('dark');
+      };
+    }
+    syncThemeSwitcherButtons();
+
+    var PLUGIN_W = 759, PLUGIN_H = 640, PLUGIN_W_MIN = 230, PLUGIN_H_MIN = 48;
+
+    document.querySelector('.sidebar').addEventListener('click', function (e) {
+      var item = e.target.closest('.menu-item');
+      if (!item) return;
+      if (item.id === 'menuMinimize') {
+        document.body.classList.add('minimized');
+        parent.postMessage({ pluginMessage: { type: 'resize', width: PLUGIN_W_MIN, height: PLUGIN_H_MIN } }, '*');
+        return;
+      }
+      if (!item.dataset.panel) return;
+      var panelId = 'panel-' + item.dataset.panel;
+      document.querySelectorAll('.menu-item').forEach(function (el) { el.classList.remove('active'); });
+      document.querySelectorAll('.panel').forEach(function (el) { el.classList.remove('active'); });
+      item.classList.add('active');
+      var panel = document.getElementById(panelId);
+      if (panel) panel.classList.add('active');
+      if (panelId === 'panel-0') {
+        requestStylesAndVariables();
+        if (item.dataset.stylerTabTarget) {
+          var targetTabName = item.dataset.stylerTabTarget;
+          var targetTab = document.querySelector('#panel-0 .styler-tab[data-styler-tab="' + targetTabName + '"]');
+          var targetPane = document.getElementById('styler-pane-' + targetTabName);
+          if (targetTab && targetPane) {
+            document.querySelectorAll('#panel-0 .styler-tab').forEach(function (el) { el.classList.remove('active'); });
+            document.querySelectorAll('#panel-0 .styler-tab-pane').forEach(function (el) { el.classList.remove('active'); });
+            targetTab.classList.add('active');
+            targetPane.classList.add('active');
+          }
+        }
+        var activeTab = document.querySelector('#panel-0 .styler-tab.active');
+        if (!activeTab) {
+          var firstTab = document.querySelector('.styler-tab[data-styler-tab="text"]');
+          var firstPane = document.getElementById('styler-pane-text');
+          if (firstTab) firstTab.classList.add('active');
+          if (firstPane) firstPane.classList.add('active');
+        }
+      }
+      if (panelId === 'panel-2') {
+        setTimeout(function () { parent.postMessage({ pluginMessage: { type: 'getSelectionFramesCount' } }, '*'); }, 0);
+      }
+    });
+
+    document.getElementById('btnExpand').onclick = function () {
+      document.body.classList.remove('minimized');
+      parent.postMessage({ pluginMessage: { type: 'resize', width: PLUGIN_W, height: PLUGIN_H } }, '*');
+      if (window.setPluginSize) window.setPluginSize(PLUGIN_W, PLUGIN_H);
+    };
+
+    var detachListContent = document.getElementById('detachListContent');
+    var lastDetachItems = [];
+    document.getElementById('btnFindDetached').onclick = function () {
+      detachListContent.textContent = 'Scanning…';
+      detachListContent.className = 'list-hint';
+      document.getElementById('btnReplaceDetached').style.display = 'none';
+      parent.postMessage({ pluginMessage: { type: 'findDetached' } }, '*');
+    };
+    document.getElementById('btnReplaceDetached').onclick = function () {
+      var rows = detachListContent.querySelectorAll('.detach-row');
+      var replacements = [];
+      for (var i = 0; i < rows.length; i++) {
+        var row = rows[i];
+        var nodeId = row.dataset.id;
+        var sel = row.querySelector('.detach-replace-select');
+        var key = sel && sel.value ? sel.value.trim() : '';
+        if (nodeId && key) replacements.push({ nodeId: nodeId, componentKey: key });
+      }
+      if (replacements.length === 0) return;
+      this.disabled = true;
+      parent.postMessage({ pluginMessage: { type: 'replaceDetached', replacements: replacements } }, '*');
+    };
+    document.getElementById('btnParseComponents').onclick = function () {
+      detachListContent.textContent = 'Parsing…';
+      detachListContent.className = 'list-hint';
+      document.getElementById('btnReplaceLocalWithLibrary').style.display = 'none';
+      parent.postMessage({ pluginMessage: { type: 'parseComponents' } }, '*');
+    };
+    document.getElementById('btnReplaceLocalWithLibrary').onclick = function () {
+      var rows = detachListContent.querySelectorAll('.parse-component-row[data-id]');
+      var replacements = [];
+      for (var i = 0; i < rows.length; i++) {
+        var row = rows[i];
+        var componentId = row.dataset.id;
+        var sel = row.querySelector('.parse-replace-select');
+        var key = sel && sel.value ? sel.value.trim() : '';
+        if (componentId && key) replacements.push({ componentId: componentId, componentKey: key });
+      }
+      if (replacements.length === 0) return;
+      this.disabled = true;
+      parent.postMessage({ pluginMessage: { type: 'replaceLocalWithLibrary', replacements: replacements } }, '*');
+    };
+
+    function requestRewriterFramesCount() {
+      parent.postMessage({ pluginMessage: { type: 'getSelectionFramesCount' } }, '*');
+    }
+
+    var rewriterPrefixInput = document.getElementById('rewriterPrefix');
+    var btnRenameFrames = document.getElementById('btnRenameFrames');
+    var rewriterLayerOrderSwitch = document.getElementById('rewriterLayerOrderSwitch');
+    var rewriterFrameCount = 0;
+
+    function setRewriterLayerPanelOrder(on) {
+      if (!rewriterLayerOrderSwitch) return;
+      rewriterLayerOrderSwitch.setAttribute('aria-checked', on ? 'true' : 'false');
+    }
+
+    function isRewriterLayerPanelOrder() {
+      return rewriterLayerOrderSwitch && rewriterLayerOrderSwitch.getAttribute('aria-checked') === 'true';
+    }
+
+    if (rewriterLayerOrderSwitch) {
+      rewriterLayerOrderSwitch.addEventListener('click', function () {
+        var on = this.getAttribute('aria-checked') !== 'true';
+        this.setAttribute('aria-checked', on ? 'true' : 'false');
+        parent.postMessage({ pluginMessage: { type: 'saveRewriterLayerPanelOrder', value: on } }, '*');
+      });
+    }
+
+    function isRewriterPrefixValid() {
+      if (!rewriterPrefixInput) return false;
+      var p = (rewriterPrefixInput.value || '').trim();
+      return /^[a-zA-Z]+$/.test(p);
+    }
+
+    function persistRewriterPrefix() {
+      if (!rewriterPrefixInput) return;
+      var v = (rewriterPrefixInput.value || '').trim();
+      parent.postMessage({ pluginMessage: { type: 'saveRewriterPrefix', prefix: v } }, '*');
+    }
+
+    function syncRewriterRenameButton() {
+      var renameBtn = document.getElementById('btnRenameFrames');
+      if (!renameBtn) return;
+      var count = rewriterFrameCount;
+      var canRun = count > 0 && isRewriterPrefixValid();
+      renameBtn.disabled = !canRun;
+      renameBtn.textContent = count > 0 ? ('Rename frames (' + count + ')') : 'Rename frames';
+    }
+
+    document.getElementById('btnRefreshFramesCount').onclick = requestRewriterFramesCount;
+
+    btnRenameFrames.onclick = function () {
+      var errEl = document.getElementById('rewriterError');
+      var prefix = rewriterPrefixInput ? (rewriterPrefixInput.value || '').trim() : '';
+      if (!/^[a-zA-Z]+$/.test(prefix)) {
+        if (errEl) { errEl.textContent = 'Enter a prefix (letters only).'; errEl.style.display = 'block'; }
+        return;
+      }
+      if (errEl) errEl.style.display = 'none';
+      btnRenameFrames.disabled = true;
+      btnRenameFrames.textContent = 'Renaming…';
+      parent.postMessage({ pluginMessage: { type: 'renameFrames', prefix: prefix, layerPanelOrder: isRewriterLayerPanelOrder() } }, '*');
+    };
+    if (rewriterPrefixInput) {
+      rewriterPrefixInput.addEventListener('input', function () {
+        this.value = this.value.replace(/[^a-zA-Z]/g, '');
+        syncRewriterRenameButton();
+        persistRewriterPrefix();
+      });
+    }
+
+    function runScan() {
+      listContent.textContent = 'Scanning…';
+      listContent.className = 'list-hint';
+      parent.postMessage({ pluginMessage: { type: 'scan' } }, '*');
+    }
+    document.getElementById('btnScan').onclick = runScan;
+    document.getElementById('btnScanLayers').onclick = function () {
+      requestStylesAndVariables();
+      parent.postMessage({ pluginMessage: { type: 'scanLayers' } }, '*');
+    };
+
+    document.querySelector('#panel-0').addEventListener('click', function (e) {
+      var tab = e.target.closest('.styler-tab[data-styler-tab]');
+      if (!tab) return;
+      var name = tab.dataset.stylerTab;
+      document.querySelectorAll('#panel-0 .styler-tab').forEach(function (t) { t.classList.remove('active'); });
+      document.querySelectorAll('#panel-0 .styler-tab-pane').forEach(function (p) { p.classList.remove('active'); });
+      tab.classList.add('active');
+      var pane = document.getElementById('styler-pane-' + name);
+      if (pane) pane.classList.add('active');
+    });
+
+    var FIGMA_TOKEN_STORAGE_KEY = 'figma_plugin_token';
+    var figmaTokenInput = document.getElementById('figmaToken');
+    var figmaAuthMessage = document.getElementById('figmaAuthMessage');
+    var commentsListContent = document.getElementById('commentsListContent');
+    document.getElementById('btnFigmaAuth').onclick = function () {
+      var token = (figmaTokenInput.value || '').trim();
+      if (!token) {
+        figmaAuthMessage.textContent = 'Enter token.';
+        figmaAuthMessage.className = 'list-error';
+        figmaAuthMessage.style.color = '';
+        return;
+      }
+      figmaAuthMessage.textContent = 'Checking…';
+      figmaAuthMessage.className = 'list-hint';
+      figmaAuthMessage.style.color = '';
+      var btn = this;
+      btn.disabled = true;
+      fetch('https://api.figma.com/v1/me', {
+        method: 'GET',
+        headers: { 'X-Figma-Token': token }
+      }).then(function (res) {
+        if (res.ok) {
+          try { localStorage.setItem(FIGMA_TOKEN_STORAGE_KEY, token); } catch (_) {}
+          figmaAuthMessage.textContent = 'Authorized.';
+          figmaAuthMessage.className = 'list-hint';
+          figmaAuthMessage.style.color = 'var(--figma-color-text-success)';
+        } else {
+          figmaAuthMessage.textContent = 'Invalid token or no access.';
+          figmaAuthMessage.className = 'list-error';
+          figmaAuthMessage.style.color = '';
+        }
+      }).catch(function () {
+        figmaAuthMessage.textContent = 'Network error.';
+        figmaAuthMessage.className = 'list-error';
+        figmaAuthMessage.style.color = '';
+      }).then(function () {
+        btn.disabled = false;
+      });
+    };
+    document.getElementById('btnGrabComments').onclick = function () {
+      var token = (figmaTokenInput.value || '').trim();
+      if (!token) {
+        try { token = localStorage.getItem(FIGMA_TOKEN_STORAGE_KEY) || ''; } catch (_) {}
+      }
+      if (!token) {
+        if (commentsListContent) {
+          commentsListContent.innerHTML = '<p class="list-error">Enter token and authorize first.</p>';
+          commentsListContent.className = 'list-error';
+        }
+        return;
+      }
+      var fileKeyInput = document.getElementById('figmaFileKey');
+      var fileKey = (fileKeyInput && fileKeyInput.value) ? fileKeyInput.value.trim() : '';
+      if (commentsListContent) {
+        commentsListContent.textContent = 'Loading comments…';
+        commentsListContent.className = 'list-hint';
+      }
+      this.disabled = true;
+      parent.postMessage({ pluginMessage: { type: 'grabComments', token: token, fileKey: fileKey || undefined } }, '*');
+    };
+
+    var textValuesListContent = document.getElementById('textValuesListContent');
+    var textValuesErrorEl = document.getElementById('textValuesError');
+    var btnExtractTextValues = document.getElementById('btnExtractTextValues');
+    var btnApplyTextValues = document.getElementById('btnApplyTextValues');
+    var btnExportTextCsv = document.getElementById('btnExportTextCsv');
+    var btnExportTextJson = document.getElementById('btnExportTextJson');
+    var btnImportTextData = document.getElementById('btnImportTextData');
+    var btnConnectMake = document.getElementById('btnConnectMake');
+    var btnSyncTextToMake = document.getElementById('btnSyncTextToMake');
+    var makeStatusEl = document.getElementById('makeStatus');
+    var textImportFileInput = document.getElementById('textImportFileInput');
+    var textMainView = document.getElementById('textMainView');
+    var textMakeSetupView = document.getElementById('textMakeSetupView');
+    var makeScenarioSelect = document.getElementById('makeScenarioSelect');
+    var makeScenarioNameInput = document.getElementById('makeScenarioName');
+    var makeWebhookUrlInput = document.getElementById('makeWebhookUrl');
+    var makeScenarioKeyInput = document.getElementById('makeScenarioKey');
+    var makeTargetSheetIdInput = document.getElementById('makeTargetSheetId');
+    var makeTargetSheetTabInput = document.getElementById('makeTargetSheetTab');
+    var makeSharedSecretInput = document.getElementById('makeSharedSecret');
+    var btnSaveMakeScenario = document.getElementById('btnSaveMakeScenario');
+    var btnSetDefaultMakeScenario = document.getElementById('btnSetDefaultMakeScenario');
+    var btnDeleteMakeScenario = document.getElementById('btnDeleteMakeScenario');
+    var btnTestMakeConnection = document.getElementById('btnTestMakeConnection');
+    var btnBackFromMakeSetup = document.getElementById('btnBackFromMakeSetup');
+    var makeSetupStatusEl = document.getElementById('makeSetupStatus');
+    var openRouterApiKeyInput = document.getElementById('openRouterApiKey');
+    var openRouterModelInput = document.getElementById('openRouterModel');
+    var btnSaveOpenRouterSettings = document.getElementById('btnSaveOpenRouterSettings');
+    var btnGenerateSemanticKeys = document.getElementById('btnGenerateSemanticKeys');
+    var llmStatusEl = document.getElementById('llmStatus');
+    var textLlmSection = document.getElementById('textLlmSection');
+    var textLlmSectionToggle = document.getElementById('textLlmSectionToggle');
+    var btnTextModeManual = document.getElementById('btnTextModeManual');
+    var btnTextModeLlm = document.getElementById('btnTextModeLlm');
+
+    var MAKE_SCENARIOS_STORAGE_KEY = 'makeScenariosV1';
+    var MAKE_ACTIVE_SCENARIO_ID_KEY = 'makeActiveScenarioIdV1';
+    var OPENROUTER_API_KEY_STORAGE_KEY = 'openRouterApiKeyV1';
+    var OPENROUTER_MODEL_STORAGE_KEY = 'openRouterModelV1';
+    var LEGACY_OPENAI_API_KEY_STORAGE_KEY = 'openAiApiKeyV1';
+    var LEGACY_OPENAI_MODEL_STORAGE_KEY = 'openAiModelV1';
+    var TEXT_MODE_STORAGE_KEY = 'textModeV1';
+    var TEXT_LLM_EXPANDED_KEY = 'textLlmSectionExpandedV1';
+    var lastTextFrameId = null;
+    var lastTextItems = [];
+    var makeScenarios = [];
+    var activeMakeScenarioId = '';
+    var pendingLlmItemsSnapshot = null;
+
+    function setTextModeButtonState(button, isActive) {
+      if (!button) return;
+      button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+    }
+
+    function setTextMode(mode) {
+      var nextMode = mode === 'llm' ? 'llm' : 'manual';
+      if (textLlmSection) textLlmSection.style.display = nextMode === 'llm' ? 'block' : 'none';
+      setTextModeButtonState(btnTextModeManual, nextMode === 'manual');
+      setTextModeButtonState(btnTextModeLlm, nextMode === 'llm');
+      try { localStorage.setItem(TEXT_MODE_STORAGE_KEY, nextMode); } catch (_) {}
+    }
+
+    function getLlmSectionExpandedPreference() {
+      try {
+        var v = localStorage.getItem(TEXT_LLM_EXPANDED_KEY);
+        if (v === '0') return false;
+        if (v === '1') return true;
+      } catch (_) {}
+      return true;
+    }
+
+    function applyLlmSectionExpanded(expanded) {
+      if (!textLlmSection) return;
+      if (textLlmSectionToggle) textLlmSectionToggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+      if (expanded) textLlmSection.classList.remove('text-llm-panel--collapsed');
+      else textLlmSection.classList.add('text-llm-panel--collapsed');
+    }
+
+    function saveLlmSectionExpanded(expanded) {
+      try { localStorage.setItem(TEXT_LLM_EXPANDED_KEY, expanded ? '1' : '0'); } catch (_) {}
+    }
+
+    function initLlmSectionExpandable() {
+      applyLlmSectionExpanded(getLlmSectionExpandedPreference());
+      if (textLlmSectionToggle) {
+        textLlmSectionToggle.onclick = function () {
+          var isOpen = textLlmSectionToggle.getAttribute('aria-expanded') === 'true';
+          var next = !isOpen;
+          applyLlmSectionExpanded(next);
+          saveLlmSectionExpanded(next);
+        };
+      }
+    }
+
+    function loadTextModeFromStorage() {
+      var mode = 'manual';
+      try {
+        var stored = localStorage.getItem(TEXT_MODE_STORAGE_KEY);
+        if (stored === 'llm' || stored === 'manual') mode = stored;
+      } catch (_) {}
+      setTextMode(mode);
+    }
+
+    function getPluginUserId() {
+      try {
+        var raw = localStorage.getItem('figmaPluginUserIdV1');
+        if (raw && raw.trim()) return raw.trim();
+        var generated = 'user-' + Date.now() + '-' + Math.floor(Math.random() * 1000000);
+        localStorage.setItem('figmaPluginUserIdV1', generated);
+        return generated;
+      } catch (_) {
+        return 'user-anon';
+      }
+    }
+
+    function showTextMainView() {
+      if (textMainView) textMainView.style.display = 'flex';
+      if (textMakeSetupView) textMakeSetupView.style.display = 'none';
+    }
+
+    function showTextMakeSetupView() {
+      if (textMainView) textMainView.style.display = 'none';
+      if (textMakeSetupView) textMakeSetupView.style.display = 'flex';
+    }
+
+    function setMakeStatus(message, isError) {
+      if (makeStatusEl) {
+        makeStatusEl.textContent = '';
+        makeStatusEl.className = 'list-hint';
+      }
+    }
+
+    function setMakeSetupStatus(message, isError) {
+      if (makeSetupStatusEl) {
+        makeSetupStatusEl.textContent = '';
+        makeSetupStatusEl.className = 'list-hint';
+      }
+    }
+
+    function loadMakeSettingsFromStorage() {
+      try {
+        var raw = localStorage.getItem(MAKE_SCENARIOS_STORAGE_KEY);
+        var parsed = raw ? JSON.parse(raw) : [];
+        makeScenarios = Array.isArray(parsed) ? parsed : [];
+      } catch (_) {
+        makeScenarios = [];
+      }
+      try {
+        activeMakeScenarioId = localStorage.getItem(MAKE_ACTIVE_SCENARIO_ID_KEY) || '';
+      } catch (_) {
+        activeMakeScenarioId = '';
+      }
+      if (!activeMakeScenarioId && makeScenarios.length > 0) {
+        var defaultScenario = null;
+        for (var i = 0; i < makeScenarios.length; i++) {
+          if (makeScenarios[i] && makeScenarios[i].isDefault) {
+            defaultScenario = makeScenarios[i];
+            break;
+          }
+        }
+        activeMakeScenarioId = defaultScenario ? defaultScenario.id : makeScenarios[0].id;
+      }
+    }
+
+    function saveMakeSettingsToStorage() {
+      try { localStorage.setItem(MAKE_SCENARIOS_STORAGE_KEY, JSON.stringify(makeScenarios)); } catch (_) {}
+      try { localStorage.setItem(MAKE_ACTIVE_SCENARIO_ID_KEY, activeMakeScenarioId || ''); } catch (_) {}
+    }
+
+    function getActiveMakeScenario() {
+      for (var i = 0; i < makeScenarios.length; i++) {
+        var scenario = makeScenarios[i];
+        if (scenario && scenario.id === activeMakeScenarioId) return scenario;
+      }
+      return null;
+    }
+
+    function updateMakeActionButtons() {
+      if (!btnSyncTextToMake) return;
+      var hasRows = !!(lastTextItems && lastTextItems.length > 0);
+      var hasScenario = !!getActiveMakeScenario();
+      btnSyncTextToMake.disabled = !(hasRows && hasScenario);
+    }
+
+    function setLlmStatus(message, isError) {
+      if (!llmStatusEl) return;
+      llmStatusEl.textContent = message || '';
+      llmStatusEl.className = isError ? 'list-error' : 'list-hint';
+    }
+
+    function loadOpenRouterSettingsFromStorage() {
+      try {
+        if (openRouterApiKeyInput) {
+          var k = localStorage.getItem(OPENROUTER_API_KEY_STORAGE_KEY) || '';
+          if (!k) k = localStorage.getItem(LEGACY_OPENAI_API_KEY_STORAGE_KEY) || '';
+          openRouterApiKeyInput.value = k;
+        }
+      } catch (_) {
+        if (openRouterApiKeyInput) openRouterApiKeyInput.value = '';
+      }
+      try {
+        if (openRouterModelInput) {
+          var m = localStorage.getItem(OPENROUTER_MODEL_STORAGE_KEY) || '';
+          if (!m) m = localStorage.getItem(LEGACY_OPENAI_MODEL_STORAGE_KEY) || '';
+          if (!m) m = 'openai/gpt-4o-mini';
+          openRouterModelInput.value = m;
+        }
+      } catch (_) {
+        if (openRouterModelInput) openRouterModelInput.value = 'openai/gpt-4o-mini';
+      }
+    }
+
+    function saveOpenRouterSettingsToStorage() {
+      var apiKey = openRouterApiKeyInput ? String(openRouterApiKeyInput.value || '').trim() : '';
+      var model = openRouterModelInput ? String(openRouterModelInput.value || '').trim() : '';
+      if (!apiKey) throw new Error('OpenRouter API key is required.');
+      if (!model) model = 'openai/gpt-4o-mini';
+      try { localStorage.setItem(OPENROUTER_API_KEY_STORAGE_KEY, apiKey); } catch (_) {}
+      try { localStorage.setItem(OPENROUTER_MODEL_STORAGE_KEY, model); } catch (_) {}
+      if (openRouterModelInput) openRouterModelInput.value = model;
+      return { apiKey: apiKey, model: model };
+    }
+
+    function getOpenRouterSettings() {
+      var apiKey = openRouterApiKeyInput ? String(openRouterApiKeyInput.value || '').trim() : '';
+      var model = openRouterModelInput ? String(openRouterModelInput.value || '').trim() : '';
+      if (!apiKey) {
+        try { apiKey = localStorage.getItem(OPENROUTER_API_KEY_STORAGE_KEY) || ''; } catch (_) {}
+      }
+      if (!apiKey) {
+        try { apiKey = localStorage.getItem(LEGACY_OPENAI_API_KEY_STORAGE_KEY) || ''; } catch (_) {}
+      }
+      if (!model) {
+        try { model = localStorage.getItem(OPENROUTER_MODEL_STORAGE_KEY) || ''; } catch (_) {}
+      }
+      if (!model) {
+        try { model = localStorage.getItem(LEGACY_OPENAI_MODEL_STORAGE_KEY) || ''; } catch (_) {}
+      }
+      if (!model) model = 'openai/gpt-4o-mini';
+      return { apiKey: apiKey, model: model };
+    }
+
+    function sanitizeSemanticKey(inputKey) {
+      var raw = inputKey == null ? '' : String(inputKey);
+      var normalized = raw
+        .replace(/([a-z0-9])([A-Z])/g, '$1_$2')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '_')
+        .replace(/^_+|_+$/g, '');
+      if (!normalized) return '';
+      if (/^[0-9]/.test(normalized)) normalized = 'k_' + normalized;
+      return normalized;
+    }
+
+    function ensureUniqueSemanticKeys(items) {
+      var used = {};
+      for (var i = 0; i < items.length; i++) {
+        var item = items[i];
+        if (!item || !item.key) continue;
+        var base = sanitizeSemanticKey(item.key) || 'text_key';
+        var candidate = base;
+        var idx = 2;
+        while (used[candidate]) {
+          candidate = base + '_' + idx;
+          idx++;
+        }
+        used[candidate] = true;
+        item.key = candidate;
+      }
+    }
+
+    function extractOpenRouterChatContent(data) {
+      if (!data || !Array.isArray(data.choices) || data.choices.length === 0) return '';
+      var choice = data.choices[0];
+      var message = choice && choice.message ? choice.message : null;
+      if (!message || message.content == null) return '';
+      if (typeof message.content === 'string') return message.content.trim();
+      if (Array.isArray(message.content)) {
+        var parts = [];
+        for (var i = 0; i < message.content.length; i++) {
+          var chunk = message.content[i];
+          if (chunk && chunk.type === 'text' && typeof chunk.text === 'string') parts.push(chunk.text);
+        }
+        return parts.join('\n').trim();
+      }
+      return '';
+    }
+
+    function requestSemanticKeysFromOpenRouter(params) {
+      var settings = getOpenRouterSettings();
+      if (!settings.apiKey) throw new Error('Save OpenRouter API key first.');
+      var frameName = params && params.frameName ? String(params.frameName) : 'Frame';
+      var imageDataUrl = params && params.imageDataUrl ? String(params.imageDataUrl) : '';
+      var items = params && Array.isArray(params.items) ? params.items : [];
+      if (!imageDataUrl) throw new Error('Missing frame image.');
+      if (!items.length) throw new Error('No extracted text items.');
+
+      var model = settings.model || 'openai/gpt-4o-mini';
+      var schema = {
+        type: 'object',
+        additionalProperties: false,
+        properties: {
+          mappings: {
+            type: 'array',
+            items: {
+              type: 'object',
+              additionalProperties: false,
+              properties: {
+                sourceId: { type: 'string' },
+                suggestedKey: { type: 'string' },
+                reason: { type: 'string' }
+              },
+              required: ['sourceId', 'suggestedKey', 'reason']
+            }
+          }
+        },
+        required: ['mappings']
+      };
+
+      var body = {
+        model: model,
+        messages: [
+          {
+            role: 'system',
+            content: 'You generate stable semantic localization keys for UI copy. Return only JSON that matches the schema exactly.'
+          },
+          {
+            role: 'user',
+            content: [
+              {
+                type: 'text',
+                text: 'Frame name: ' + frameName + '\nSuggest semantic snake_case keys for each row.\nRules: short, readable, context-aware, deterministic.\nRows JSON:\n' + JSON.stringify(items, null, 2)
+              },
+              {
+                type: 'image_url',
+                image_url: { url: imageDataUrl }
+              }
+            ]
+          }
+        ],
+        response_format: {
+          type: 'json_schema',
+          json_schema: {
+            name: 'semantic_key_response',
+            strict: true,
+            schema: schema
+          }
+        }
+      };
+
+      return fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer ' + settings.apiKey,
+          'Content-Type': 'application/json',
+          'HTTP-Referer': 'https://www.figma.com',
+          'X-Title': 'OneManStudio Figma Plugin'
+        },
+        body: JSON.stringify(body)
+      }).then(function (res) {
+        return res.json().then(function (data) {
+          if (!res.ok) {
+            var apiMessage = data && data.error && data.error.message ? data.error.message : ('OpenRouter request failed (' + res.status + ').');
+            throw new Error(apiMessage);
+          }
+          var textPayload = extractOpenRouterChatContent(data);
+          if (!textPayload) throw new Error('OpenRouter returned empty response.');
+          var parsed = JSON.parse(textPayload);
+          if (!parsed || !Array.isArray(parsed.mappings)) throw new Error('OpenRouter returned invalid mappings payload.');
+          return parsed;
+        });
+      });
+    }
+
+    function renderMakeScenarioOptions() {
+      if (!makeScenarioSelect) return;
+      if (!makeScenarios || makeScenarios.length === 0) {
+        makeScenarioSelect.innerHTML = '<option value="">No scenarios yet</option>';
+      } else {
+        makeScenarioSelect.innerHTML = makeScenarios.map(function (scenario) {
+          var label = scenario.name || scenario.scenarioKey || 'Scenario';
+          if (scenario.isDefault) label += ' (default)';
+          return '<option value="' + escapeHtml(scenario.id) + '">' + escapeHtml(label) + '</option>';
+        }).join('');
+      }
+      makeScenarioSelect.value = activeMakeScenarioId || '';
+      updateMakeActionButtons();
+      var active = getActiveMakeScenario();
+      if (active) {
+        setMakeStatus('Active Make scenario: ' + (active.name || active.scenarioKey || active.id), false);
+      } else {
+        setMakeStatus('No Make scenario selected. Click Connect Make.', true);
+      }
+    }
+
+    function fillMakeSetupFormFromScenario(scenario) {
+      var s = scenario || {};
+      if (makeScenarioNameInput) makeScenarioNameInput.value = s.name || '';
+      if (makeWebhookUrlInput) makeWebhookUrlInput.value = s.webhookUrl || '';
+      if (makeScenarioKeyInput) makeScenarioKeyInput.value = s.scenarioKey || '';
+      if (makeTargetSheetIdInput) makeTargetSheetIdInput.value = s.targetSheetId || '';
+      if (makeTargetSheetTabInput) makeTargetSheetTabInput.value = s.targetSheetTab || '';
+      if (makeSharedSecretInput) makeSharedSecretInput.value = s.secret || '';
+    }
+
+    function collectMakeFormScenario() {
+      var name = makeScenarioNameInput ? String(makeScenarioNameInput.value || '').trim() : '';
+      var webhookUrl = makeWebhookUrlInput ? String(makeWebhookUrlInput.value || '').trim() : '';
+      var scenarioKey = makeScenarioKeyInput ? String(makeScenarioKeyInput.value || '').trim() : '';
+      var targetSheetId = makeTargetSheetIdInput ? String(makeTargetSheetIdInput.value || '').trim() : '';
+      var targetSheetTab = makeTargetSheetTabInput ? String(makeTargetSheetTabInput.value || '').trim() : '';
+      var secret = makeSharedSecretInput ? String(makeSharedSecretInput.value || '').trim() : '';
+
+      if (!webhookUrl) throw new Error('Webhook URL is required.');
+      if (webhookUrl.indexOf('http://') === 0) throw new Error('Use HTTPS webhook URL.');
+      if (webhookUrl.indexOf('https://') !== 0) throw new Error('Webhook URL should start with https://');
+      if (!scenarioKey) throw new Error('Scenario key is required.');
+      if (!targetSheetId) throw new Error('Target Google Sheet ID is required.');
+      if (!name) name = scenarioKey;
+
+      return {
+        name: name,
+        webhookUrl: webhookUrl,
+        scenarioKey: scenarioKey,
+        targetSheetId: targetSheetId,
+        targetSheetTab: targetSheetTab,
+        secret: secret,
+      };
+    }
+
+    function upsertCurrentMakeScenario() {
+      var formScenario = collectMakeFormScenario();
+      var existingIndex = -1;
+      for (var i = 0; i < makeScenarios.length; i++) {
+        if (makeScenarios[i] && makeScenarios[i].id === activeMakeScenarioId) {
+          existingIndex = i;
+          break;
+        }
+      }
+      if (existingIndex >= 0) {
+        makeScenarios[existingIndex] = {
+          id: makeScenarios[existingIndex].id,
+          isDefault: !!makeScenarios[existingIndex].isDefault,
+          name: formScenario.name,
+          webhookUrl: formScenario.webhookUrl,
+          scenarioKey: formScenario.scenarioKey,
+          targetSheetId: formScenario.targetSheetId,
+          targetSheetTab: formScenario.targetSheetTab,
+          secret: formScenario.secret,
+        };
+      } else {
+        var newId = 'scenario-' + Date.now() + '-' + Math.floor(Math.random() * 1000000);
+        makeScenarios.push({
+          id: newId,
+          isDefault: makeScenarios.length === 0,
+          name: formScenario.name,
+          webhookUrl: formScenario.webhookUrl,
+          scenarioKey: formScenario.scenarioKey,
+          targetSheetId: formScenario.targetSheetId,
+          targetSheetTab: formScenario.targetSheetTab,
+          secret: formScenario.secret,
+        });
+        activeMakeScenarioId = newId;
+      }
+      saveMakeSettingsToStorage();
+      renderMakeScenarioOptions();
+    }
+
+    function buildMakePayload(actionType) {
+      var scenario = getActiveMakeScenario();
+      if (!scenario) throw new Error('No active Make scenario.');
+      var items = getTextValuesSnapshotFromInputs();
+      if (!items || items.length === 0) throw new Error('Extract text values first.');
+      return {
+        event: actionType || 'text_sync',
+        scenario_key: scenario.scenarioKey,
+        target_sheet_id: scenario.targetSheetId,
+        target_sheet_tab: scenario.targetSheetTab || '',
+        plugin_user_id: getPluginUserId(),
+        frame_id: lastTextFrameId || '',
+        sent_at: new Date().toISOString(),
+        items: items,
+      };
+    }
+
+    function sendPayloadToMake(payload, scenario) {
+      return fetch(scenario.webhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      }).then(function (res) {
+        if (!res.ok) throw new Error('Make webhook returned status ' + res.status + '.');
+        return res;
+      });
+    }
+
+    function setTextTransferButtonsState(isEnabled) {
+      if (btnExportTextCsv) btnExportTextCsv.disabled = !isEnabled;
+      if (btnExportTextJson) btnExportTextJson.disabled = !isEnabled;
+      updateMakeActionButtons();
+    }
+
+    loadMakeSettingsFromStorage();
+    renderMakeScenarioOptions();
+    fillMakeSetupFormFromScenario(getActiveMakeScenario());
+    loadOpenRouterSettingsFromStorage();
+    loadTextModeFromStorage();
+    initLlmSectionExpandable();
+    showTextMainView();
+
+    if (btnTextModeManual) {
+      btnTextModeManual.onclick = function () {
+        setTextMode('manual');
+      };
+    }
+    if (btnTextModeLlm) {
+      btnTextModeLlm.onclick = function () {
+        setTextMode('llm');
+      };
+    }
+
+    function csvEscape(value) {
+      var s = value == null ? '' : String(value);
+      var escaped = s.replace(/"/g, '""');
+      if (/[",\r\n]/.test(escaped)) return '"' + escaped + '"';
+      return escaped;
+    }
+
+    function buildTextValuesCsv(items) {
+      var lines = ['id,key,value'];
+      for (var i = 0; i < items.length; i++) {
+        var it = items[i] || {};
+        lines.push([
+          csvEscape(it.id || ''),
+          csvEscape(it.key || ''),
+          csvEscape(it.value != null ? String(it.value) : ''),
+        ].join(','));
+      }
+      return lines.join('\n');
+    }
+
+    function parseCsvLine(line) {
+      var out = [];
+      var cur = '';
+      var inQuotes = false;
+      for (var i = 0; i < line.length; i++) {
+        var ch = line[i];
+        if (ch === '"') {
+          if (inQuotes && line[i + 1] === '"') {
+            cur += '"';
+            i++;
+          } else {
+            inQuotes = !inQuotes;
+          }
+          continue;
+        }
+        if (ch === ',' && !inQuotes) {
+          out.push(cur);
+          cur = '';
+          continue;
+        }
+        cur += ch;
+      }
+      out.push(cur);
+      return out;
+    }
+
+    function parseTextValuesCsv(csvText) {
+      var normalized = (csvText || '').replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+      var lines = normalized.split('\n').filter(function (line) { return line.trim() !== ''; });
+      if (lines.length === 0) return [];
+
+      var header = parseCsvLine(lines[0]).map(function (h) { return (h || '').trim().toLowerCase(); });
+      var idIdx = header.indexOf('id');
+      var keyIdx = header.indexOf('key');
+      var valueIdx = header.indexOf('value');
+      if (idIdx < 0 && keyIdx < 0) throw new Error('CSV must contain "id" or "key" column.');
+      if (valueIdx < 0) throw new Error('CSV must contain "value" column.');
+
+      var rows = [];
+      for (var i = 1; i < lines.length; i++) {
+        var cols = parseCsvLine(lines[i]);
+        rows.push({
+          id: idIdx >= 0 ? (cols[idIdx] || '').trim() : '',
+          key: keyIdx >= 0 ? (cols[keyIdx] || '').trim() : '',
+          value: valueIdx >= 0 ? (cols[valueIdx] || '') : '',
+        });
+      }
+      return rows;
+    }
+
+    function downloadText(filename, content, mimeType) {
+      var blob = new Blob([content], { type: mimeType });
+      var url = URL.createObjectURL(blob);
+      var link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }
+
+    function getTextValuesSnapshotFromInputs() {
+      var keyById = {};
+      for (var i = 0; i < lastTextItems.length; i++) {
+        var src = lastTextItems[i] || {};
+        if (src.id) keyById[src.id] = src.key || '';
+      }
+      var inputs = textValuesListContent ? textValuesListContent.querySelectorAll('input.textkv-input[data-node-id]') : [];
+      var out = [];
+      for (var j = 0; j < inputs.length; j++) {
+        var inp = inputs[j];
+        var id = inp && inp.dataset ? inp.dataset.nodeId : '';
+        if (!id) continue;
+        out.push({
+          id: id,
+          key: keyById[id] || '',
+          value: inp.value != null ? String(inp.value) : '',
+        });
+      }
+      return out;
+    }
+
+    function applyImportedTextRows(rows) {
+      if (!rows || rows.length === 0) throw new Error('Imported file has no rows.');
+      if (!textValuesListContent) throw new Error('Text values list is not available.');
+
+      var inputs = textValuesListContent.querySelectorAll('input.textkv-input[data-node-id]');
+      if (!inputs || inputs.length === 0) throw new Error('Extract text values first.');
+
+      var inputById = {};
+      for (var i = 0; i < inputs.length; i++) {
+        var inp = inputs[i];
+        var id = inp && inp.dataset ? inp.dataset.nodeId : '';
+        if (id) inputById[id] = inp;
+      }
+      var idByKey = {};
+      for (var j = 0; j < lastTextItems.length; j++) {
+        var item = lastTextItems[j] || {};
+        if (item.key) idByKey[item.key] = item.id || '';
+      }
+
+      var applied = 0;
+      var skipped = 0;
+      for (var k = 0; k < rows.length; k++) {
+        var row = rows[k] || {};
+        var targetId = '';
+        if (row.id && inputById[row.id]) targetId = row.id;
+        if (!targetId && row.key && idByKey[row.key] && inputById[idByKey[row.key]]) targetId = idByKey[row.key];
+        if (!targetId) {
+          skipped++;
+          continue;
+        }
+        inputById[targetId].value = row.value != null ? String(row.value) : '';
+        applied++;
+      }
+      return { applied: applied, skipped: skipped };
+    }
+
+    function renderTextKeyValues(items) {
+      lastTextItems = items || [];
+      setTextTransferButtonsState(!!items && items.length > 0);
+      if (btnGenerateSemanticKeys) btnGenerateSemanticKeys.disabled = !(lastTextFrameId && items && items.length > 0);
+      if (!textValuesListContent) return;
+
+      if (!items || items.length === 0) {
+        if (btnApplyTextValues) btnApplyTextValues.disabled = true;
+        textValuesListContent.innerHTML = '<p class="list-empty-p" style="margin: 0;">No text layers found.</p>';
+        textValuesListContent.className = 'list-empty';
+        return;
+      }
+
+      var html = items.map(function (it, rowIndex) {
+        var value = it && it.value != null ? String(it.value) : '';
+        var id = it && it.id ? String(it.id) : '';
+        var key = it && it.key != null ? String(it.key) : '';
+        var inputId = 'textkv-inp-' + rowIndex;
+        return '<div class="textkv-row" style="display:flex; align-items:center; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--figma-color-border);">' +
+          '<label class="textkv-label" for="' + inputId + '">' +
+          escapeHtml(key) + ':</label>' +
+          '<input id="' + inputId + '" type="text" class="textkv-input" data-node-id="' + escapeHtml(id) + '" value="' + escapeHtml(value) + '" ' +
+          'style="flex: 1; width: 100%; padding: 8px 10px; border: 1px solid var(--figma-color-border); border-radius: var(--radius); background: var(--figma-color-rect); color: var(--figma-color-text); font-size: 12px;" />' +
+          '</div>';
+      }).join('');
+      textValuesListContent.innerHTML = html;
+      textValuesListContent.className = '';
+      var rows = textValuesListContent.querySelectorAll('.textkv-row');
+      if (rows && rows.length > 0) rows[rows.length - 1].style.borderBottom = 'none';
+      if (btnApplyTextValues) {
+        btnApplyTextValues.disabled = false;
+        btnApplyTextValues.textContent = 'Apply changes';
+      }
+    }
+
+    if (btnExtractTextValues) {
+      btnExtractTextValues.onclick = function () {
+        setLlmStatus('', false);
+        if (textValuesErrorEl) {
+          textValuesErrorEl.style.display = 'none';
+          textValuesErrorEl.textContent = '';
+        }
+        if (textValuesListContent) {
+          textValuesListContent.textContent = 'Extracting…';
+          textValuesListContent.className = 'list-hint';
+        }
+        if (btnApplyTextValues) {
+          btnApplyTextValues.disabled = true;
+          btnApplyTextValues.textContent = 'Apply changes';
+        }
+        setTextTransferButtonsState(false);
+        parent.postMessage({ pluginMessage: { type: 'extractTextKeyValues' } }, '*');
+      };
+    }
+
+    if (btnSaveOpenRouterSettings) {
+      btnSaveOpenRouterSettings.onclick = function () {
+        try {
+          saveOpenRouterSettingsToStorage();
+          setLlmStatus('OpenRouter settings saved.', false);
+        } catch (err) {
+          setLlmStatus(err && err.message ? err.message : 'Failed to save OpenRouter settings.', true);
+        }
+      };
+    }
+
+    if (btnGenerateSemanticKeys) {
+      btnGenerateSemanticKeys.onclick = function () {
+        try {
+          var snapshot = getTextValuesSnapshotFromInputs();
+          if (!lastTextFrameId) throw new Error('Extract text values first.');
+          if (!snapshot || snapshot.length === 0) throw new Error('No text values to process.');
+          var settings = getOpenRouterSettings();
+          if (!settings.apiKey) throw new Error('Save OpenRouter API key first.');
+          if (!settings.model) throw new Error('Model is required.');
+          pendingLlmItemsSnapshot = snapshot;
+          btnGenerateSemanticKeys.disabled = true;
+          btnGenerateSemanticKeys.textContent = 'Generating…';
+          setLlmStatus('Exporting frame screenshot…', false);
+          parent.postMessage({ pluginMessage: { type: 'captureFrameImageForLlm', frameId: lastTextFrameId } }, '*');
+        } catch (err) {
+          setLlmStatus(err && err.message ? err.message : 'Failed to start semantic key generation.', true);
+        }
+      };
+    }
+
+    if (btnExportTextCsv) {
+      btnExportTextCsv.onclick = function () {
+        try {
+          var items = getTextValuesSnapshotFromInputs();
+          if (!items || items.length === 0) throw new Error('Extract text values first.');
+          var filename = 'text-values-' + Date.now() + '.csv';
+          downloadText(filename, buildTextValuesCsv(items), 'text/csv;charset=utf-8');
+          if (textValuesErrorEl) {
+            textValuesErrorEl.style.display = 'none';
+            textValuesErrorEl.textContent = '';
+          }
+        } catch (err) {
+          if (textValuesErrorEl) {
+            textValuesErrorEl.textContent = err && err.message ? err.message : 'Failed to export CSV.';
+            textValuesErrorEl.style.display = 'block';
+          }
+        }
+      };
+    }
+
+    if (btnExportTextJson) {
+      btnExportTextJson.onclick = function () {
+        try {
+          var items = getTextValuesSnapshotFromInputs();
+          if (!items || items.length === 0) throw new Error('Extract text values first.');
+          var payload = {
+            frameId: lastTextFrameId || null,
+            items: items,
+          };
+          var filename = 'text-values-' + Date.now() + '.json';
+          downloadText(filename, JSON.stringify(payload, null, 2), 'application/json;charset=utf-8');
+          if (textValuesErrorEl) {
+            textValuesErrorEl.style.display = 'none';
+            textValuesErrorEl.textContent = '';
+          }
+        } catch (err) {
+          if (textValuesErrorEl) {
+            textValuesErrorEl.textContent = err && err.message ? err.message : 'Failed to export JSON.';
+            textValuesErrorEl.style.display = 'block';
+          }
+        }
+      };
+    }
+
+    if (btnImportTextData && textImportFileInput) {
+      btnImportTextData.onclick = function () {
+        textImportFileInput.value = '';
+        textImportFileInput.click();
+      };
+      textImportFileInput.onchange = function () {
+        var file = textImportFileInput.files && textImportFileInput.files[0];
+        if (!file) return;
+        var reader = new FileReader();
+        reader.onload = function () {
+          try {
+            var fileName = (file.name || '').toLowerCase();
+            var text = reader.result != null ? String(reader.result) : '';
+            var rows = [];
+
+            if (fileName.endsWith('.json')) {
+              var parsed = JSON.parse(text);
+              var jsonItems = parsed && Array.isArray(parsed.items) ? parsed.items : (Array.isArray(parsed) ? parsed : null);
+              if (!jsonItems) throw new Error('JSON must be an array or an object with "items" array.');
+              rows = jsonItems.map(function (it) {
+                return {
+                  id: it && it.id ? String(it.id).trim() : '',
+                  key: it && it.key ? String(it.key).trim() : '',
+                  value: it && it.value != null ? String(it.value) : '',
+                };
+              });
+            } else {
+              rows = parseTextValuesCsv(text);
+            }
+
+            var result = applyImportedTextRows(rows);
+            if (textValuesErrorEl) {
+              textValuesErrorEl.className = 'list-hint text-values-error-in-scroll';
+              textValuesErrorEl.textContent = 'Imported: applied ' + result.applied + ', skipped ' + result.skipped + '. Click "Apply changes" to update nodes.';
+              textValuesErrorEl.style.display = 'block';
+            }
+            if (btnApplyTextValues) {
+              btnApplyTextValues.disabled = false;
+              btnApplyTextValues.textContent = 'Apply changes';
+            }
+          } catch (err) {
+            if (textValuesErrorEl) {
+              textValuesErrorEl.className = 'list-error text-values-error-in-scroll';
+              textValuesErrorEl.textContent = err && err.message ? err.message : 'Failed to import file.';
+              textValuesErrorEl.style.display = 'block';
+            }
+          }
+        };
+        reader.onerror = function () {
+          if (textValuesErrorEl) {
+            textValuesErrorEl.className = 'list-error text-values-error-in-scroll';
+            textValuesErrorEl.textContent = 'Failed to read file.';
+            textValuesErrorEl.style.display = 'block';
+          }
+        };
+        reader.readAsText(file, 'utf-8');
+      };
+    }
+
+    if (btnConnectMake) {
+      btnConnectMake.onclick = function () {
+        showTextMakeSetupView();
+        setMakeSetupStatus('Configure Make scenario and click Save.', false);
+      };
+    }
+
+    if (btnBackFromMakeSetup) {
+      btnBackFromMakeSetup.onclick = function () {
+        showTextMainView();
+        setMakeSetupStatus('', false);
+      };
+    }
+
+    if (makeScenarioSelect) {
+      makeScenarioSelect.onchange = function () {
+        activeMakeScenarioId = makeScenarioSelect.value || '';
+        saveMakeSettingsToStorage();
+        var active = getActiveMakeScenario();
+        fillMakeSetupFormFromScenario(active);
+        renderMakeScenarioOptions();
+        if (active) setMakeSetupStatus('Scenario selected.', false);
+      };
+    }
+
+    if (btnSaveMakeScenario) {
+      btnSaveMakeScenario.onclick = function () {
+        try {
+          upsertCurrentMakeScenario();
+          setMakeSetupStatus('Scenario saved.', false);
+        } catch (err) {
+          setMakeSetupStatus(err && err.message ? err.message : 'Failed to save scenario.', true);
+        }
+      };
+    }
+
+    if (btnSetDefaultMakeScenario) {
+      btnSetDefaultMakeScenario.onclick = function () {
+        var active = getActiveMakeScenario();
+        if (!active) {
+          setMakeSetupStatus('Select scenario first.', true);
+          return;
+        }
+        for (var i = 0; i < makeScenarios.length; i++) {
+          makeScenarios[i].isDefault = makeScenarios[i].id === active.id;
+        }
+        saveMakeSettingsToStorage();
+        renderMakeScenarioOptions();
+        setMakeSetupStatus('Default scenario updated.', false);
+      };
+    }
+
+    if (btnDeleteMakeScenario) {
+      btnDeleteMakeScenario.onclick = function () {
+        var active = getActiveMakeScenario();
+        if (!active) {
+          setMakeSetupStatus('No active scenario to delete.', true);
+          return;
+        }
+        makeScenarios = makeScenarios.filter(function (scenario) { return scenario.id !== active.id; });
+        activeMakeScenarioId = makeScenarios.length > 0 ? makeScenarios[0].id : '';
+        if (makeScenarios.length > 0) {
+          var hasDefault = false;
+          for (var i = 0; i < makeScenarios.length; i++) if (makeScenarios[i].isDefault) hasDefault = true;
+          if (!hasDefault) makeScenarios[0].isDefault = true;
+        }
+        saveMakeSettingsToStorage();
+        renderMakeScenarioOptions();
+        fillMakeSetupFormFromScenario(getActiveMakeScenario());
+        setMakeSetupStatus('Scenario deleted.', false);
+      };
+    }
+
+    if (btnTestMakeConnection) {
+      btnTestMakeConnection.onclick = function () {
+        var previousText = btnTestMakeConnection.textContent;
+        btnTestMakeConnection.disabled = true;
+        btnTestMakeConnection.textContent = 'Testing…';
+        try {
+          var scenario = collectMakeFormScenario();
+          var testPayload = {
+            event: 'connection_test',
+            scenario_key: scenario.scenarioKey,
+            target_sheet_id: scenario.targetSheetId,
+            target_sheet_tab: scenario.targetSheetTab || '',
+            plugin_user_id: getPluginUserId(),
+            sent_at: new Date().toISOString(),
+            items: [],
+          };
+          sendPayloadToMake(testPayload, scenario).then(function () {
+            setMakeSetupStatus('Connection test sent successfully.', false);
+          }).catch(function (err) {
+            setMakeSetupStatus(err && err.message ? err.message : 'Connection test failed.', true);
+          }).then(function () {
+            btnTestMakeConnection.disabled = false;
+            btnTestMakeConnection.textContent = previousText;
+          });
+        } catch (err) {
+          setMakeSetupStatus(err && err.message ? err.message : 'Connection test failed.', true);
+          btnTestMakeConnection.disabled = false;
+          btnTestMakeConnection.textContent = previousText;
+        }
+      };
+    }
+
+    if (btnSyncTextToMake) {
+      btnSyncTextToMake.onclick = function () {
+        var active = getActiveMakeScenario();
+        if (!active) {
+          setMakeStatus('No active Make scenario. Click Connect Make.', true);
+          return;
+        }
+        var previous = btnSyncTextToMake.textContent;
+        btnSyncTextToMake.disabled = true;
+        btnSyncTextToMake.textContent = 'Syncing…';
+        try {
+          var payload = buildMakePayload('text_sync');
+          sendPayloadToMake(payload, active).then(function () {
+            setMakeStatus('Synced ' + payload.items.length + ' rows to Make scenario "' + (active.name || active.scenarioKey) + '".', false);
+          }).catch(function (err) {
+            setMakeStatus(err && err.message ? err.message : 'Failed to sync with Make.', true);
+          }).then(function () {
+            btnSyncTextToMake.textContent = previous;
+            updateMakeActionButtons();
+          });
+        } catch (err) {
+          setMakeStatus(err && err.message ? err.message : 'Failed to sync with Make.', true);
+          btnSyncTextToMake.textContent = previous;
+          updateMakeActionButtons();
+        }
+      };
+    }
+
+    if (btnApplyTextValues) {
+      btnApplyTextValues.onclick = function () {
+        if (!lastTextFrameId) {
+          if (textValuesErrorEl) {
+            textValuesErrorEl.textContent = 'No extracted frame state. Extract first.';
+            textValuesErrorEl.style.display = 'block';
+          }
+          return;
+        }
+        var inputs = textValuesListContent ? textValuesListContent.querySelectorAll('input.textkv-input[data-node-id]') : [];
+        var updates = [];
+        for (var i = 0; i < inputs.length; i++) {
+          var inp = inputs[i];
+          var id = inp && inp.dataset ? inp.dataset.nodeId : null;
+          if (!id) continue;
+          updates.push({ id: id, value: inp.value });
+        }
+        if (updates.length === 0) return;
+
+        this.disabled = true;
+        this.textContent = 'Applying…';
+        parent.postMessage({ pluginMessage: { type: 'updateTextKeyValues', frameId: lastTextFrameId, updates: updates } }, '*');
+      };
+    }
+
+    var cleanerListContent = document.getElementById('cleanerListContent');
+    var cleanerListWrap = document.getElementById('cleanerListWrap');
+    document.getElementById('btnFindEmpty').onclick = function () {
+      cleanerListContent.textContent = 'Scanning…';
+      cleanerListContent.className = 'list-hint';
+      parent.postMessage({ pluginMessage: { type: 'findEmptyElements' } }, '*');
+    };
+    var lastCleanerItems = [];
+    var pendingDeleteIds = null;
+
+    function updateDeleteButton() {
+      var btn = document.getElementById('btnDeleteCleaner');
+      if (!btn) return;
+      var count = 0;
+      if (cleanerListContent.querySelectorAll) {
+        count = cleanerListContent.querySelectorAll('input.cleaner-check:checked').length;
+      }
+      btn.textContent = count > 0 ? 'Delete (' + count + ')' : 'Delete';
+      btn.disabled = count === 0;
+    }
+
+    function renderCleanerList(items) {
+      lastCleanerItems = items || [];
+      if (!items || items.length === 0) {
+        document.getElementById('btnDeleteCleaner').style.display = 'none';
+        cleanerListContent.innerHTML = '<p class="list-hint">Select a frame and press «Find empty elements».</p>';
+        cleanerListContent.className = 'list-hint';
+        return;
+      }
+      document.getElementById('btnDeleteCleaner').style.display = 'block';
+      var selectAllRow = '<div class="cleaner-select-all-row"><input type="checkbox" id="cleaner-select-all" title="Select all"><label for="cleaner-select-all">All</label></div>';
+      var rows = items.map(function (it) {
+        return '<div class="cleaner-row" data-id="' + escapeHtml(it.id) + '" title="Select on canvas">' +
+          '<input type="checkbox" class="cleaner-check" data-id="' + escapeHtml(it.id) + '">' +
+          '<span class="cleaner-name">' + escapeHtml(it.name) + '</span>' +
+          '<span class="cleaner-reason">' + escapeHtml(it.reason) + '</span></div>';
+      }).join('');
+      cleanerListContent.innerHTML = selectAllRow + rows;
+      cleanerListContent.className = '';
+      updateDeleteButton();
+    }
+
+    cleanerListWrap.addEventListener('click', function (e) {
+      if (e.target.type === 'checkbox' && (e.target.classList.contains('cleaner-check') || e.target.id === 'cleaner-select-all')) return;
+      var row = e.target.closest('.cleaner-row');
+      if (row && row.dataset.id) {
+        parent.postMessage({ pluginMessage: { type: 'selectNode', id: row.dataset.id } }, '*');
+      }
+    });
+    cleanerListWrap.addEventListener('change', function (e) {
+      if (e.target.id === 'cleaner-select-all') {
+        var checked = e.target.checked;
+        cleanerListContent.querySelectorAll('input.cleaner-check').forEach(function (cb) { cb.checked = checked; });
+      }
+      if (e.target.classList.contains('cleaner-check') || e.target.id === 'cleaner-select-all') {
+        var all = cleanerListContent.querySelectorAll('input.cleaner-check');
+        var selectAll = document.getElementById('cleaner-select-all');
+        if (selectAll && all.length) {
+          selectAll.checked = all.length === cleanerListContent.querySelectorAll('input.cleaner-check:checked').length;
+        }
+        updateDeleteButton();
+      }
+    });
+
+    document.getElementById('btnDeleteCleaner').onclick = function () {
+      var checked = cleanerListContent.querySelectorAll('input.cleaner-check:checked');
+      var ids = [];
+      for (var i = 0; i < checked.length; i++) ids.push(checked[i].dataset.id);
+      if (ids.length === 0) return;
+      this.disabled = true;
+      this.textContent = 'Deleting…';
+      pendingDeleteIds = ids;
+      parent.postMessage({ pluginMessage: { type: 'deleteNodes', ids: ids } }, '*');
+    };
+
+    var detachListWrap = document.getElementById('detachListWrap');
+    if (detachListWrap) {
+      detachListWrap.addEventListener('click', function (e) {
+        if (e.target.closest('select')) return;
+        var row = e.target.closest('.detach-row');
+        if (row && row.dataset.id) {
+          parent.postMessage({ pluginMessage: { type: 'selectNode', id: row.dataset.id } }, '*');
+          return;
+        }
+        var parseRow = e.target.closest('.parse-component-row');
+        if (parseRow && parseRow.dataset.id) {
+          parent.postMessage({ pluginMessage: { type: 'selectNode', id: parseRow.dataset.id } }, '*');
+        }
+      });
+    }
+
+    function handleListClick(e) {
+      var swatch = e.target.closest('.swatch');
+      if (swatch && swatch.dataset.groupIndex !== undefined) {
+        e.stopPropagation();
+        e.preventDefault();
+        var idx = parseInt(swatch.dataset.groupIndex, 10);
+        var inLayers = e.target.closest('#layersListContent');
+        var groups = inLayers ? lastLayersRenderedGroups : lastRenderedGroups;
+        if (!isNaN(idx) && groups && groups[idx]) {
+          var ids = groups[idx].items.map(function (it) { return it.id; });
+          if (ids.length > 0) {
+            parent.postMessage({ pluginMessage: { type: 'selectNodes', ids: ids } }, '*');
+          }
+        }
+        return;
+      }
+      var insideWrap = e.target.closest && (e.target.closest('.fill-select-wrap') || e.target.closest('.text-style-select-wrap'));
+      if (!insideWrap) {
+        document.querySelectorAll('.fill-select-wrap.fill-select-open, .text-style-select-wrap.fill-select-open').forEach(function (w) { w.classList.remove('fill-select-open'); });
+        listWrap.classList.remove('dropdown-open');
+        var layersListWrap = document.getElementById('layersListWrap');
+        if (layersListWrap) layersListWrap.classList.remove('dropdown-open');
+      }
+      var header = e.target.closest('.group-header');
+      if (header && !e.target.closest('.fill-select')) {
+        var group = header.closest('.group');
+        if (group) group.classList.toggle('collapsed');
+        return;
+      }
+      var layerRow = e.target.closest('.layer-name');
+      if (layerRow && layerRow.dataset.id) {
+        parent.postMessage({ pluginMessage: { type: 'selectNode', id: layerRow.dataset.id } }, '*');
+        return;
+      }
+    }
+    listWrap.addEventListener('click', handleListClick);
+    document.getElementById('layersListWrap').addEventListener('click', handleListClick);
+
+    function updateListWrapDropdownOpen() {
+      var hasOpen = !!document.querySelector('.fill-select-wrap.fill-select-open, .text-style-select-wrap.fill-select-open');
+      listWrap.classList.toggle('dropdown-open', hasOpen);
+      var layersListWrap = document.getElementById('layersListWrap');
+      if (layersListWrap) layersListWrap.classList.toggle('dropdown-open', hasOpen);
+    }
+    function handleFillSelectClick(e) {
+      var trigger = e.target.closest('.fill-select-trigger');
+      if (trigger) {
+        e.preventDefault();
+        e.stopPropagation();
+        var wrap = trigger.closest('.fill-select-wrap, .text-style-select-wrap');
+        if (wrap) {
+          document.querySelectorAll('.fill-select-wrap.fill-select-open, .text-style-select-wrap.fill-select-open').forEach(function (w) {
+            if (w !== wrap) w.classList.remove('fill-select-open');
+          });
+          wrap.classList.toggle('fill-select-open');
+          updateListWrapDropdownOpen();
+        }
+        return;
+      }
+      var option = e.target.closest('.fill-select-option');
+      if (option) {
+        e.preventDefault();
+        e.stopPropagation();
+        var val = (option.dataset.value || '').trim();
+        var wrap = option.closest('.fill-select-wrap, .text-style-select-wrap');
+        if (wrap) wrap.classList.remove('fill-select-open');
+        updateListWrapDropdownOpen();
+        if (!val) return;
+        var isLayers = wrap && wrap.dataset.source === 'layers';
+        var explicitNodeId = wrap && wrap.dataset ? wrap.dataset.nodeId : null;
+        var nodeIds = null;
+
+        // If user selected one or more rows via checkboxes, apply to all selected nodes.
+        // Otherwise, apply to the current row (explicitNodeId) as a fallback.
+        var groupEl = wrap ? wrap.closest('.group') : null;
+        var selectedChecks = groupEl ? groupEl.querySelectorAll('input.layer-check:checked') : null;
+        var selectedNodeIds = [];
+        if (selectedChecks && selectedChecks.length) {
+          selectedNodeIds = Array.prototype.slice.call(selectedChecks).map(function (c) {
+            return c && c.dataset ? c.dataset.nodeId : null;
+          }).filter(function (x) { return !!x; });
+        }
+        if (selectedNodeIds.length > 0) {
+          nodeIds = selectedNodeIds;
+        } else if (explicitNodeId) {
+          nodeIds = [explicitNodeId];
+        } else {
+          // Legacy fallback: apply to the whole group by groupIndex (if present).
+          var idx = wrap ? parseInt(wrap.dataset.groupIndex, 10) : NaN;
+          var groups = isLayers ? lastLayersRenderedGroups : lastRenderedGroups;
+          if (isNaN(idx) || !groups || !groups[idx]) return;
+          nodeIds = groups[idx].items.map(function (it) { return it.id; });
+        }
+        if (!nodeIds || nodeIds.length === 0) return;
+        if (wrap && wrap.dataset.selectType === 'text-style') {
+          parent.postMessage({ pluginMessage: { type: 'applyTextStyleToGroup', nodeIds: nodeIds, textStyleId: val } }, '*');
+          return;
+        }
+        var styleId = null;
+        var variableId = null;
+        var variableKey = null;
+        if (val.indexOf('style:') === 0) styleId = val.slice(6);
+        else if (val.indexOf('variable:') === 0) variableId = val.slice(9);
+        else if (val.indexOf('variableKey:') === 0) variableKey = val.slice(12);
+        if (!styleId && !variableId && !variableKey) return;
+        if (isLayers) lastApplyWasLayers = true;
+        parent.postMessage({ pluginMessage: { type: 'applyFillToGroup', nodeIds: nodeIds, styleId: styleId || undefined, variableId: variableId || undefined, variableKey: variableKey || undefined } }, '*');
+      }
+    }
+    listWrap.addEventListener('click', handleFillSelectClick);
+    document.getElementById('layersListWrap').addEventListener('click', handleFillSelectClick);
+
+    function handleLayerCheckboxChange(e) {
+      var t = e.target;
+      if (!t || !t.classList) return;
+
+      var group = t.closest && t.closest('.group');
+      if (!group) return;
+
+      // Select all checkbox toggles all nested checkboxes in the same group.
+      if (t.classList.contains('layer-check-selectall')) {
+        var checksAll = group.querySelectorAll('input.layer-check');
+        checksAll.forEach(function (c) { c.checked = t.checked; });
+        checksAll.forEach(function (c) {
+          var row = c.closest('.layer-row');
+          if (row) row.classList.toggle('selected', !!c.checked);
+        });
+        return;
+      }
+
+      // Individual checkbox updates its row styling and syncs "Select all".
+      if (t.classList.contains('layer-check')) {
+        var rowEl = t.closest('.layer-row');
+        if (rowEl) rowEl.classList.toggle('selected', !!t.checked);
+
+        var selectAll = group.querySelector('input.layer-check-selectall');
+        if (selectAll) {
+          var checks = group.querySelectorAll('input.layer-check');
+          var allChecked = checks.length > 1;
+          checks.forEach(function (c) { if (!c.checked) allChecked = false; });
+          selectAll.checked = allChecked;
+        }
+      }
+    }
+    listWrap.addEventListener('change', handleLayerCheckboxChange);
+    var layersListWrapEl = document.getElementById('layersListWrap');
+    if (layersListWrapEl) layersListWrapEl.addEventListener('change', handleLayerCheckboxChange);
+
+    var documentStyles = { textStyles: [], paintStyles: [] };
+    var pendingShowPaintStyles = false;
+    var lastScanResult = null;
+    var lastRenderedGroups = null;
+    var hideLocalStyle = false;
+    var lastLayersScanResult = null;
+    var lastLayersRenderedGroups = null;
+    var lastApplyWasLayers = false;
+
+    var resultsHeaderEl = document.getElementById('resultsHeader');
+    var hideLocalStyleCheckbox = document.getElementById('hideLocalStyle');
+    if (hideLocalStyleCheckbox) {
+      hideLocalStyleCheckbox.addEventListener('change', function () {
+        if (lastScanResult) renderScanResult(lastScanResult, this.checked);
+      });
+    }
+
+    function cssColor(hex) {
+      if (!hex || typeof hex !== 'string') return 'var(--figma-color-bg-secondary)';
+      return hex.indexOf('rgba') === 0 || hex.indexOf('rgb') === 0 ? hex : (hex.indexOf('#') === 0 ? hex : '#' + hex);
+    }
+    function oneOptionStyle(p, groupKey, prefix) {
+      var swatchStyle = p.hex ? ' style="background:' + escapeHtml(cssColor(p.hex)) + '"' : '';
+      var swatchClass = p.hex ? ' fill-select-swatch' : ' fill-select-swatch fill-select-swatch-empty';
+      var hexLine = p.hex ? '<span class="fill-select-option-hex">' + escapeHtml(p.hex) + '</span>' : '';
+      var matchesClass = (groupKey && p.hex && normalizeColorForCompare(p.hex) === groupKey) ? ' fill-select-option--matches' : '';
+      var matchLabel = (groupKey && p.hex && normalizeColorForCompare(p.hex) === groupKey) ? '<span class="fill-select-option-match">= цвет строки</span>' : '';
+      return '<div class="fill-select-option' + matchesClass + '" data-value="' + prefix + escapeHtml(p.id) + '"><span class="' + swatchClass.trim() + '"' + swatchStyle + '></span><span class="fill-select-option-text"><span class="fill-select-option-label">' + escapeHtml(p.name) + '</span>' + hexLine + matchLabel + '</span></div>';
+    }
+    function oneOptionVariable(v, groupKey) {
+      var vSwatchStyle = v.hex ? ' style="background:' + escapeHtml(cssColor(v.hex)) + '"' : '';
+      var vSwatchClass = v.hex ? ' fill-select-swatch' : ' fill-select-swatch fill-select-swatch-empty';
+      var vHexLine = v.hex ? '<span class="fill-select-option-hex">' + escapeHtml(v.hex) + '</span>' : '';
+      var vMatchesClass = (groupKey && v.hex && normalizeColorForCompare(v.hex) === groupKey) ? ' fill-select-option--matches' : '';
+      var vMatchLabel = (groupKey && v.hex && normalizeColorForCompare(v.hex) === groupKey) ? '<span class="fill-select-option-match">= цвет строки</span>' : '';
+      var dataVal = v.id ? ('variable:' + escapeHtml(v.id)) : ('variableKey:' + escapeHtml(v.key));
+      return '<div class="fill-select-option' + vMatchesClass + '" data-value="' + dataVal + '"><span class="' + vSwatchClass.trim() + '"' + vSwatchStyle + '></span><span class="fill-select-option-text"><span class="fill-select-option-label">' + escapeHtml(v.name) + '</span>' + vHexLine + vMatchLabel + '</span></div>';
+    }
+    function buildFillSelectHtml(groupIndex, nodeId) {
+      var parts = [];
+      var groupKey = null;
+      if (lastRenderedGroups && lastRenderedGroups[groupIndex]) {
+        groupKey = normalizeColorForCompare(lastRenderedGroups[groupIndex].colorHex);
+      }
+      var nodeAttr = nodeId ? (' data-node-id="' + escapeHtml(nodeId) + '"') : '';
+      parts.push('<div class="fill-select fill-select-wrap" data-group-index="' + groupIndex + '"' + nodeAttr + ' title="Apply style or variable">');
+      parts.push('<button type="button" class="fill-select-trigger"><span class="fill-select-trigger-swatch"></span><span class="fill-select-trigger-label">color</span></button>');
+      parts.push('<div class="fill-select-dropdown">');
+      parts.push('<div class="fill-select-option" data-value=""><span class="fill-select-swatch fill-select-swatch-keep"></span><span class="fill-select-option-text"><span class="fill-select-option-label">color</span></span></div>');
+      var ps = (stylesAndVariables.paintStyles || []).slice();
+      var seenIds = {};
+      for (var i = 0; i < ps.length; i++) seenIds[ps[i].id] = true;
+      if (lastScanResult && lastScanResult.groups) {
+        for (var k = 0; k < lastScanResult.groups.length; k++) {
+          var g = lastScanResult.groups[k];
+          if (g.type === 'style' && g.styleId && !seenIds[g.styleId]) {
+            seenIds[g.styleId] = true;
+            ps.push({ id: g.styleId, name: g.styleName || g.styleId || 'Style', hex: g.colorHex || null, source: 'local' });
+          }
+        }
+      }
+      var libraryStyles = [];
+      var localStyles = [];
+      for (var i = 0; i < ps.length; i++) {
+        if (ps[i].source === 'library') libraryStyles.push(ps[i]);
+        else localStyles.push(ps[i]);
+      }
+      var vv = stylesAndVariables.variables || [];
+      var libraryVars = [];
+      var localVars = [];
+      for (var j = 0; j < vv.length; j++) {
+        if (vv[j].source === 'library') libraryVars.push(vv[j]);
+        else localVars.push(vv[j]);
+      }
+      if (libraryStyles.length > 0 || libraryVars.length > 0) {
+        parts.push('<div class="fill-select-section-label">Library</div>');
+        for (var i = 0; i < libraryStyles.length; i++) {
+          parts.push(oneOptionStyle(libraryStyles[i], groupKey, 'style:'));
+        }
+        for (var j = 0; j < libraryVars.length; j++) {
+          parts.push(oneOptionVariable(libraryVars[j], groupKey));
+        }
+      }
+      if (localStyles.length > 0 || localVars.length > 0) {
+        parts.push('<div class="fill-select-section-label">Local</div>');
+        for (var i = 0; i < localStyles.length; i++) {
+          parts.push(oneOptionStyle(localStyles[i], groupKey, 'style:'));
+        }
+        for (var j = 0; j < localVars.length; j++) {
+          parts.push(oneOptionVariable(localVars[j], groupKey));
+        }
+      }
+      parts.push('</div></div>');
+      return parts.join('');
+    }
+
+    function buildFillSelectHtmlLayers(groupIndex, nodeId) {
+      var parts = [];
+      var groupKey = null;
+      if (lastLayersRenderedGroups && lastLayersRenderedGroups[groupIndex]) {
+        groupKey = normalizeColorForCompare(lastLayersRenderedGroups[groupIndex].colorHex);
+      }
+      var nodeAttr = nodeId ? (' data-node-id="' + escapeHtml(nodeId) + '"') : '';
+      parts.push('<div class="fill-select fill-select-wrap" data-group-index="' + groupIndex + '"' + nodeAttr + ' data-source="layers" title="Apply style or variable">');
+      parts.push('<button type="button" class="fill-select-trigger"><span class="fill-select-trigger-swatch"></span><span class="fill-select-trigger-label">color</span></button>');
+      parts.push('<div class="fill-select-dropdown">');
+      parts.push('<div class="fill-select-option" data-value=""><span class="fill-select-swatch fill-select-swatch-keep"></span><span class="fill-select-option-text"><span class="fill-select-option-label">color</span></span></div>');
+      var ps = (stylesAndVariables.paintStyles || []).slice();
+      var seenIds = {};
+      for (var i = 0; i < ps.length; i++) seenIds[ps[i].id] = true;
+      if (lastLayersScanResult && lastLayersScanResult.groups) {
+        for (var k = 0; k < lastLayersScanResult.groups.length; k++) {
+          var g = lastLayersScanResult.groups[k];
+          if (g.type === 'style' && g.styleId && !seenIds[g.styleId]) {
+            seenIds[g.styleId] = true;
+            ps.push({ id: g.styleId, name: g.styleName || g.styleId || 'Style', hex: g.colorHex || null, source: 'local' });
+          }
+        }
+      }
+      var libraryStyles = [];
+      var localStyles = [];
+      for (var i = 0; i < ps.length; i++) {
+        if (ps[i].source === 'library') libraryStyles.push(ps[i]);
+        else localStyles.push(ps[i]);
+      }
+      var vv = stylesAndVariables.variables || [];
+      var libraryVars = [];
+      var localVars = [];
+      for (var j = 0; j < vv.length; j++) {
+        if (vv[j].source === 'library') libraryVars.push(vv[j]);
+        else localVars.push(vv[j]);
+      }
+      if (libraryStyles.length > 0 || libraryVars.length > 0) {
+        parts.push('<div class="fill-select-section-label">Library</div>');
+        for (var i = 0; i < libraryStyles.length; i++) {
+          parts.push(oneOptionStyle(libraryStyles[i], groupKey, 'style:'));
+        }
+        for (var j = 0; j < libraryVars.length; j++) {
+          parts.push(oneOptionVariable(libraryVars[j], groupKey));
+        }
+      }
+      if (localStyles.length > 0 || localVars.length > 0) {
+        parts.push('<div class="fill-select-section-label">Local</div>');
+        for (var i = 0; i < localStyles.length; i++) {
+          parts.push(oneOptionStyle(localStyles[i], groupKey, 'style:'));
+        }
+        for (var j = 0; j < localVars.length; j++) {
+          parts.push(oneOptionVariable(localVars[j], groupKey));
+        }
+      }
+      parts.push('</div></div>');
+      return parts.join('');
+    }
+
+    function buildTextStyleSelectHtml(groupIndex, nodeId) {
+      var parts = [];
+      var nodeAttr = nodeId ? (' data-node-id="' + escapeHtml(nodeId) + '"') : '';
+      parts.push('<div class="fill-select text-style-select-wrap" data-group-index="' + groupIndex + '"' + nodeAttr + ' data-select-type="text-style" title="Apply text style">');
+      parts.push('<button type="button" class="fill-select-trigger"><span class="fill-select-trigger-label">font style</span></button>');
+      parts.push('<div class="fill-select-dropdown">');
+      parts.push('<div class="fill-select-option" data-value=""><span class="fill-select-option-text"><span class="fill-select-option-label">font style</span></span></div>');
+      var ts = (stylesAndVariables.textStyles || []).slice();
+      var seenIds = {};
+      for (var i = 0; i < ts.length; i++) seenIds[ts[i].id] = true;
+      if (lastScanResult && lastScanResult.groups) {
+        for (var k = 0; k < lastScanResult.groups.length; k++) {
+          var gr = lastScanResult.groups[k];
+          if (gr.items) {
+            for (var j = 0; j < gr.items.length; j++) {
+              var it = gr.items[j];
+              if (it.textStyleId && !seenIds[it.textStyleId]) {
+                seenIds[it.textStyleId] = true;
+                ts.push({ id: it.textStyleId, name: it.textStyleName || it.textStyleId || 'Style' });
+              }
+            }
+          }
+        }
+      }
+      for (var i = 0; i < ts.length; i++) {
+        var s = ts[i];
+        parts.push('<div class="fill-select-option" data-value="' + escapeHtml(s.id) + '"><span class="fill-select-option-text"><span class="fill-select-option-label">' + escapeHtml(s.name || 'Style') + '</span></span></div>');
+      }
+      parts.push('</div></div>');
+      return parts.join('');
+    }
+
+      // Layout-only: measure rendered "table columns" and set CSS vars for consistent alignment.
+    function syncGroupHeaderColumnWidths(listWrapEl) {
+      if (!listWrapEl || !listWrapEl.querySelectorAll) return;
+      var headers = listWrapEl.querySelectorAll('.group-header');
+      if (!headers || headers.length === 0) return;
+
+      function measureWidth(el) {
+        if (!el) return 0;
+          // Use scrollWidth when available so we capture full content width before wrapping.
+          // Then ceil to avoid sub-pixel drift between different Mac/Zoom settings.
+          var sw = 0;
+          try { sw = el.scrollWidth || 0; } catch (_) {}
+          var r = el.getBoundingClientRect();
+          var w = Math.max(r.width || 0, sw || 0);
+          return Math.ceil(w);
+      }
+
+      var colHex = 0;
+      var colStyle = 0;
+      var colTextStyleCell = 0;
+      var colLayerCount = 0;
+      var colFillSelectWrap = 0;
+      var colTextStyleSelectWrap = 0;
+
+      var hasTextStyleCell = !!listWrapEl.querySelector('.text-style-cell');
+      var hasTextStyleSelectWrap = !!listWrapEl.querySelector('.text-style-select-wrap');
+
+      for (var i = 0; i < headers.length; i++) {
+        var h = headers[i];
+        colHex = Math.max(colHex, measureWidth(h.querySelector('.hex')));
+        colStyle = Math.max(colStyle, measureWidth(h.querySelector('.style-name')));
+        colTextStyleCell = Math.max(colTextStyleCell, measureWidth(h.querySelector('.text-style-cell')));
+        colLayerCount = Math.max(colLayerCount, measureWidth(h.querySelector('.layer-count')));
+        colFillSelectWrap = Math.max(colFillSelectWrap, measureWidth(h.querySelector('.fill-select-wrap')));
+        colTextStyleSelectWrap = Math.max(colTextStyleSelectWrap, measureWidth(h.querySelector('.text-style-select-wrap')));
+      }
+
+      var header = headers[0];
+      var headerStyle = window.getComputedStyle ? window.getComputedStyle(header) : null;
+      var paddingLeft = headerStyle ? parseFloat(headerStyle.paddingLeft) : 12;
+      var paddingRight = headerStyle ? parseFloat(headerStyle.paddingRight) : 12;
+      var columnGap = headerStyle ? parseFloat(headerStyle.columnGap) : 12;
+      if (isNaN(paddingLeft)) paddingLeft = 12;
+      if (isNaN(paddingRight)) paddingRight = 12;
+      if (isNaN(columnGap)) columnGap = 12;
+
+      // Available width for grid tracks inside the header's padding box.
+      var available = header.clientWidth - paddingLeft - paddingRight;
+      if (isNaN(available) || available <= 0) available = listWrapEl.clientWidth;
+
+      // Grid has 5 columns => 4 column gaps.
+      var gapTotal = columnGap * 4;
+      var fixedFirstLast = 16; // swatch column only
+      var varSum = colHex + colStyle + colTextStyleCell + colLayerCount;
+
+      // How much "variable" width we can give before we start forcing horizontal overflow.
+      var allowedVarSum = available - gapTotal - fixedFirstLast;
+      if (isNaN(allowedVarSum) || allowedVarSum < 0) allowedVarSum = 0;
+
+      // Scale down proportionally if needed; keep some minimal widths so UI stays readable.
+      var minHex = 60;
+      var minStyle = 90;
+      var minTextStyleCell = hasTextStyleCell ? 90 : 0;
+      var minLayerCount = 60;
+      var minFillSelectWrap = 0; // no longer used in header grid
+      var minTextStyleSelectWrap = hasTextStyleSelectWrap ? 0 : 0;
+
+      // If varSum is 0 (shouldn't happen), just apply mins.
+      var factor = 1;
+      if (varSum > 0 && allowedVarSum < varSum) factor = allowedVarSum / varSum;
+      // When factor < 1, scale each column down but do not go below its min.
+      function scaled(maxW, minW) {
+        if (factor >= 1) return maxW;
+        return Math.max(minW, Math.floor(maxW * factor));
+      }
+
+      listWrapEl.style.setProperty('--col-hex', scaled(colHex, minHex) + 'px');
+      listWrapEl.style.setProperty('--col-style', scaled(colStyle, minStyle) + 'px');
+      listWrapEl.style.setProperty('--col-textstylecell', scaled(colTextStyleCell, minTextStyleCell) + 'px');
+      listWrapEl.style.setProperty('--col-layercount', scaled(colLayerCount, minLayerCount) + 'px');
+      // Keep properties for compatibility, but header grid no longer uses fill/text-style selectors.
+      listWrapEl.style.setProperty('--col-fillselectwrap', scaled(colFillSelectWrap, minFillSelectWrap) + 'px');
+      listWrapEl.style.setProperty('--col-textstyleselectwrap', scaled(colTextStyleSelectWrap, minTextStyleSelectWrap) + 'px');
+    }
+
+    function renderScanResult(data, hideLocal) {
+      if (!data || !data.groups || data.groups.length === 0) {
+        lastRenderedGroups = null;
+        if (resultsHeaderEl) resultsHeaderEl.style.display = 'none';
+        listContent.textContent = 'No text layers in selection.';
+        listContent.className = 'list-empty';
+        return;
+      }
+      var groups = data.groups.slice();
+      if (hideLocal) {
+        groups = groups.filter(function (g) {
+          if (g.type === 'style' && g.source === 'local') return false;
+          if (g.type === 'variable') return false;
+          return true;
+        });
+      }
+      if (groups.length === 0) {
+        lastRenderedGroups = null;
+        if (resultsHeaderEl) resultsHeaderEl.style.display = 'none';
+        listContent.textContent = 'Нет элементов после фильтра (локальный стиль и переменные скрыты).';
+        listContent.className = 'list-empty';
+        return;
+      }
+      lastRenderedGroups = groups;
+      var totalLayers = 0;
+      var html = groups.map(function (g, idx) {
+        var count = g.items.length;
+        totalLayers += count;
+        var countLabel = count === 1 ? '1 object' : count + ' objects';
+        var chevronHtml = '<span class="chevron">▼</span>';
+        var groupClass = 'group collapsed';
+        var swatchAttr = ' data-group-index="' + idx + '" title="Выделить все в группе"';
+        var leftCell = '';
+        var styleLabel = '';
+        if (g.type === 'color') {
+          var bg = colorToCss(g);
+          styleLabel = '<span class="style-name unstyled">Unstyled</span>';
+          leftCell = '<span class="swatch" style="background:' + bg + '"' + swatchAttr + '></span><span class="hex">' + escapeHtml(g.colorHex || '') + '</span>' + styleLabel;
+        } else if (g.type === 'variable') {
+          var bgVar = colorToCss(g);
+          styleLabel = '<span class="style-name" title="' + escapeHtml(g.variableName || '') + '">' + escapeHtml(g.variableName || 'Variable') + ' (переменная)</span>';
+          leftCell = '<span class="swatch" style="background:' + bgVar + '"' + swatchAttr + '></span><span class="hex">' + escapeHtml(g.colorHex || '—') + '</span>' + styleLabel;
+        } else {
+          var bg = colorToCss(g);
+          var sourceLabel = (g.source === 'library') ? ' (библиотека)' : ((g.source === 'local') ? ' (локальный)' : '');
+          styleLabel = '<span class="style-name" title="' + escapeHtml(g.styleName || '') + '">' + escapeHtml(g.styleName || 'Style') + sourceLabel + '</span>';
+          leftCell = '<span class="swatch" style="background:' + bg + '"' + swatchAttr + '></span><span class="hex">' + escapeHtml(g.colorHex || '—') + '</span>' + styleLabel;
+        }
+        var summary = g.textStyleSummary || { type: 'none' };
+        var textStyleCell = '';
+        if (summary.type === 'saved' && summary.name) {
+          textStyleCell = '<div class="text-style-cell"><span class="text-style-name">' + escapeHtml(summary.name) + '</span></div>';
+        } else if (summary.type === 'unsaved') {
+          var nameLine = summary.fontFamily ? escapeHtml(summary.fontFamily) : '—';
+          var metaParts = [];
+          if (summary.fontSize != null) metaParts.push(summary.fontSize + 'px');
+          if (summary.fontWeight != null) metaParts.push(String(summary.fontWeight));
+          var metaLine = metaParts.length ? metaParts.join(', ') : '—';
+          textStyleCell = '<div class="text-style-cell"><span class="text-style-name">' + nameLine + '</span><span class="text-style-meta">' + escapeHtml(metaLine) + '</span></div>';
+        } else if (summary.type === 'mixed') {
+          textStyleCell = '<div class="text-style-cell text-style-mixed">Mixed</div>';
+        } else {
+          textStyleCell = '<div class="text-style-cell text-style-mixed">—</div>';
+        }
+        // Top-level: no selectors, only summary + expand.
+        var headerHtml = '<div class="group-header">' + leftCell + textStyleCell + '<span class="layer-count">' + escapeHtml(countLabel) + '</span>' + chevronHtml + '</div>';
+        var selectAllRowHtml = count > 1
+          ? '<div class="layer-select-all-row">' +
+            '<label class="layer-check-label">' +
+              '<input type="checkbox" class="layer-check-selectall" data-group-index="' + idx + '" />' +
+              '<span>Select all</span>' +
+            '</label>' +
+          '</div>'
+          : '';
+        var bodyHtml = '<div class="group-body">' + selectAllRowHtml + g.items.map(function (it) {
+          var fillSelectForItem = buildFillSelectHtml(idx, it.id);
+          var textStyleSelectForItem = buildTextStyleSelectHtml(idx, it.id);
+          return '<div class="layer-row">' +
+            '<input type="checkbox" class="layer-check" data-group-index="' + idx + '" data-node-id="' + escapeHtml(it.id) + '" />' +
+            '<div class="layer-name" data-id="' + escapeHtml(it.id) + '" title="Select on canvas">' + escapeHtml(it.name) + '</div>' +
+            '<div class="layer-selects">' + fillSelectForItem + textStyleSelectForItem + '</div>' +
+          '</div>';
+        }).join('') + '</div>';
+        return '<div class="' + groupClass + '">' + headerHtml + bodyHtml + '</div>';
+      }).join('');
+      if (resultsHeaderEl) {
+        resultsHeaderEl.textContent = totalLayers + ' layer' + (totalLayers === 1 ? '' : 's') + ' found';
+        resultsHeaderEl.style.display = 'block';
+      }
+      listContent.innerHTML = html;
+      listContent.className = '';
+      syncGroupHeaderColumnWidths(listWrap);
+    }
+
+    var layersResultsHeaderEl = document.getElementById('layersResultsHeader');
+    var layersListContent = document.getElementById('layersListContent');
+
+    function renderLayersScanResult(data) {
+      if (!data || !data.groups || data.groups.length === 0) {
+        lastLayersRenderedGroups = null;
+        if (layersResultsHeaderEl) layersResultsHeaderEl.style.display = 'none';
+        layersListContent.textContent = 'No layers with fills in selection (or only text layers).';
+        layersListContent.className = 'list-empty';
+        return;
+      }
+      lastLayersRenderedGroups = data.groups;
+      var totalLayers = 0;
+      var html = data.groups.map(function (g, idx) {
+        var count = g.items.length;
+        totalLayers += count;
+        var countLabel = count === 1 ? '1 object' : count + ' objects';
+        var chevronHtml = '<span class="chevron">▼</span>';
+        var groupClass = 'group collapsed';
+        var swatchAttr = ' data-group-index="' + idx + '" title="Select all in group"';
+        var leftCell = '';
+        if (g.type === 'color') {
+          var bg = colorToCss(g);
+          leftCell = '<span class="swatch" style="background:' + bg + '"' + swatchAttr + '></span><span class="hex">' + escapeHtml(g.colorHex || '') + '</span><span class="style-name unstyled">Unstyled</span>';
+        } else if (g.type === 'variable') {
+          var bgVar = colorToCss(g);
+          leftCell = '<span class="swatch" style="background:' + bgVar + '"' + swatchAttr + '></span><span class="hex">' + escapeHtml(g.colorHex || '—') + '</span><span class="style-name" title="' + escapeHtml(g.variableName || '') + '">' + escapeHtml(g.variableName || 'Variable') + '</span>';
+        } else {
+          var bg = colorToCss(g);
+          var sourceLabel = (g.source === 'library') ? ' (библиотека)' : ((g.source === 'local') ? ' (локальный)' : '');
+          leftCell = '<span class="swatch" style="background:' + bg + '"' + swatchAttr + '></span><span class="hex">' + escapeHtml(g.colorHex || '—') + '</span><span class="style-name" title="' + escapeHtml(g.styleName || '') + '">' + escapeHtml(g.styleName || 'Style') + sourceLabel + '</span>';
+        }
+        var headerHtml = '<div class="group-header">' + leftCell + '<span class="layer-count">' + escapeHtml(countLabel) + '</span>' + chevronHtml + '</div>';
+        var selectAllRowHtml = count > 1
+          ? '<div class="layer-select-all-row">' +
+            '<label class="layer-check-label">' +
+              '<input type="checkbox" class="layer-check-selectall" data-group-index="' + idx + '" />' +
+              '<span>Select all</span>' +
+            '</label>' +
+          '</div>'
+          : '';
+        var bodyHtml = '<div class="group-body">' + selectAllRowHtml + g.items.map(function (it) {
+          var fillSelectForItem = buildFillSelectHtmlLayers(idx, it.id);
+          return '<div class="layer-row">' +
+            '<input type="checkbox" class="layer-check" data-group-index="' + idx + '" data-node-id="' + escapeHtml(it.id) + '" />' +
+            '<div class="layer-name" data-id="' + escapeHtml(it.id) + '" title="Select on canvas">' + escapeHtml(it.name) + '</div>' +
+            '<div class="layer-selects">' + fillSelectForItem + '</div>' +
+          '</div>';
+        }).join('') + '</div>';
+        return '<div class="' + groupClass + '">' + headerHtml + bodyHtml + '</div>';
+      }).join('');
+      if (layersResultsHeaderEl) {
+        layersResultsHeaderEl.textContent = totalLayers + ' layer' + (totalLayers === 1 ? '' : 's') + ' found';
+        layersResultsHeaderEl.style.display = 'block';
+      }
+      layersListContent.innerHTML = html;
+      layersListContent.className = '';
+      syncGroupHeaderColumnWidths(document.getElementById('layersListWrap'));
+    }
+
+    function renderPaintStylesList() {
+      var list = documentStyles.paintStyles || [];
+      if (list.length === 0) {
+        listContent.innerHTML = '<p class="list-empty-p">Нет цветовых стилей в выделении.</p><p class="list-empty-hint">Выделите frame или group с текстовыми слоями (у которых заливка из стиля) и нажмите кнопку «Цветовые стили документа» снова.</p>';
+        listContent.className = 'list-empty';
+        return;
+      }
+      var html = list.map(function (s) {
+        var sourceLabel = s.source === 'library' ? ' (библиотека)' : (s.source === 'local' ? ' (локальный)' : '');
+        return '<div class="paint-style-row"><span class="paint-style-name">' + escapeHtml(s.name || 'Unnamed') + sourceLabel + '</span></div>';
+      }).join('');
+      listContent.innerHTML = html;
+      listContent.className = '';
+    }
+
+    window.addEventListener('message', function (event) {
+      var msg = event.data && event.data.pluginMessage;
+      if (!msg) return;
+      if (msg.type === 'rewriterSettings') {
+        if (rewriterPrefixInput && typeof msg.prefix === 'string') {
+          rewriterPrefixInput.value = msg.prefix.replace(/[^a-zA-Z]/g, '').slice(0, 20);
+        }
+        setRewriterLayerPanelOrder(msg.layerPanelOrder === true);
+        syncRewriterRenameButton();
+        return;
+      }
+      if (msg.type === 'documentStyles') {
+        documentStyles.textStyles = msg.textStyles || [];
+        documentStyles.paintStyles = msg.paintStyles || [];
+        if (pendingShowPaintStyles) {
+          pendingShowPaintStyles = false;
+          renderPaintStylesList();
+        }
+        return;
+      }
+      if (msg.type === 'textStyles') {
+        documentStyles.textStyles = msg.textStyles || [];
+        return;
+      }
+      if (msg.type === 'stylesAndVariablesResult') {
+        stylesAndVariables.paintStyles = msg.paintStyles || [];
+        stylesAndVariables.textStyles = msg.textStyles || [];
+        stylesAndVariables.variables = msg.variables || [];
+        if (lastScanResult) {
+          var cb = document.getElementById('hideLocalStyle');
+          renderScanResult(lastScanResult, cb ? cb.checked : false);
+        }
+        return;
+      }
+      if (msg.type === 'applyFillToGroupResult' || msg.type === 'applyTextStyleToGroupResult') {
+        if (lastApplyWasLayers) {
+          lastApplyWasLayers = false;
+          layersListContent.textContent = 'Updating…';
+          layersListContent.className = 'list-hint';
+          parent.postMessage({ pluginMessage: { type: 'scanLayers' } }, '*');
+        } else {
+          listContent.textContent = 'Updating…';
+          listContent.className = 'list-hint';
+          parent.postMessage({ pluginMessage: { type: 'scan' } }, '*');
+        }
+        return;
+      }
+      if (msg.type === 'scanLayersResult') {
+        if (msg.error) {
+          lastLayersScanResult = null;
+          lastLayersRenderedGroups = null;
+          if (layersResultsHeaderEl) layersResultsHeaderEl.style.display = 'none';
+          layersListContent.textContent = msg.error;
+          layersListContent.className = 'list-error';
+          return;
+        }
+        lastLayersScanResult = msg.data || null;
+        renderLayersScanResult(lastLayersScanResult);
+        return;
+      }
+      if (msg.type === 'scanResult') {
+        if (msg.error) {
+          lastScanResult = null;
+          if (resultsHeaderEl) resultsHeaderEl.style.display = 'none';
+          listContent.textContent = msg.error;
+          listContent.className = 'list-error';
+          return;
+        }
+        lastScanResult = msg.data || null;
+        var cb = document.getElementById('hideLocalStyle');
+        hideLocalStyle = cb ? cb.checked : false;
+        renderScanResult(lastScanResult, hideLocalStyle);
+        return;
+      }
+      if (msg.type === 'cleanerResult') {
+        if (msg.error) {
+          lastCleanerItems = [];
+          document.getElementById('btnDeleteCleaner').style.display = 'none';
+          cleanerListContent.textContent = msg.error;
+          cleanerListContent.className = 'list-error';
+          return;
+        }
+        var items = msg.items || [];
+        if (items.length === 0) {
+          lastCleanerItems = [];
+          document.getElementById('btnDeleteCleaner').style.display = 'none';
+          cleanerListContent.textContent = 'No empty elements found.';
+          cleanerListContent.className = 'list-empty';
+          return;
+        }
+        renderCleanerList(items);
+        return;
+      }
+      if (msg.type === 'textKeyValuesResult') {
+        if (msg.error) {
+          lastTextFrameId = null;
+          lastTextItems = [];
+          setTextTransferButtonsState(false);
+          if (textValuesErrorEl) {
+            textValuesErrorEl.textContent = msg.error;
+            textValuesErrorEl.style.display = 'block';
+            textValuesErrorEl.className = 'list-error text-values-error-in-scroll';
+          }
+          if (btnApplyTextValues) btnApplyTextValues.disabled = true;
+          if (textValuesListContent) {
+            textValuesListContent.textContent = msg.error;
+            textValuesListContent.className = 'list-error';
+          }
+          return;
+        }
+        lastTextFrameId = msg.frameId || null;
+        if (textValuesErrorEl) {
+          textValuesErrorEl.style.display = 'none';
+          textValuesErrorEl.textContent = '';
+        }
+        renderTextKeyValues(msg.items || []);
+        setLlmStatus('', false);
+        return;
+      }
+      if (msg.type === 'textKeyValuesUpdated') {
+        if (msg.error) {
+          if (textValuesErrorEl) {
+            textValuesErrorEl.textContent = msg.error;
+            textValuesErrorEl.style.display = 'block';
+            textValuesErrorEl.className = 'list-error text-values-error-in-scroll';
+          }
+          if (btnApplyTextValues) {
+            btnApplyTextValues.disabled = false;
+            btnApplyTextValues.textContent = 'Apply changes';
+          }
+          return;
+        }
+        if (textValuesListContent) {
+          textValuesListContent.textContent = 'Updated ' + (msg.updated || 0) + ' text layer(s).';
+          textValuesListContent.className = 'list-hint';
+        }
+        if (btnApplyTextValues) {
+          btnApplyTextValues.disabled = true;
+          btnApplyTextValues.textContent = 'Apply changes';
+        }
+        parent.postMessage({ pluginMessage: { type: 'extractTextKeyValues' } }, '*');
+        return;
+      }
+      if (msg.type === 'frameImageForLlmResult') {
+        if (msg.error) {
+          pendingLlmItemsSnapshot = null;
+          if (btnGenerateSemanticKeys) {
+            btnGenerateSemanticKeys.textContent = 'Generate semantic keys';
+            btnGenerateSemanticKeys.disabled = !(lastTextFrameId && lastTextItems && lastTextItems.length > 0);
+          }
+          setLlmStatus(msg.error, true);
+          return;
+        }
+
+        var sourceItems = pendingLlmItemsSnapshot || getTextValuesSnapshotFromInputs();
+        setLlmStatus('Requesting semantic keys from OpenRouter…', false);
+        requestSemanticKeysFromOpenRouter({
+          frameName: msg.frameName || 'Frame',
+          imageDataUrl: msg.imageDataUrl || '',
+          items: sourceItems
+        }).then(function (result) {
+          var mappingById = {};
+          var mappings = result && Array.isArray(result.mappings) ? result.mappings : [];
+          for (var i = 0; i < mappings.length; i++) {
+            var m = mappings[i] || {};
+            if (!m.sourceId) continue;
+            var nextKey = sanitizeSemanticKey(m.suggestedKey || '');
+            if (!nextKey) continue;
+            mappingById[String(m.sourceId)] = nextKey;
+          }
+          var updatedItems = (lastTextItems || []).map(function (item) {
+            var next = { id: item.id, key: item.key, value: item.value };
+            if (mappingById[item.id]) next.key = mappingById[item.id];
+            return next;
+          });
+          ensureUniqueSemanticKeys(updatedItems);
+          renderTextKeyValues(updatedItems);
+          setLlmStatus('Semantic keys generated. Review list and click "Apply changes" when ready.', false);
+        }).catch(function (err) {
+          setLlmStatus(err && err.message ? err.message : 'Failed to generate semantic keys.', true);
+        }).then(function () {
+          pendingLlmItemsSnapshot = null;
+          if (btnGenerateSemanticKeys) {
+            btnGenerateSemanticKeys.textContent = 'Generate semantic keys';
+            btnGenerateSemanticKeys.disabled = !(lastTextFrameId && lastTextItems && lastTextItems.length > 0);
+          }
+        });
+        return;
+      }
+      if (msg.type === 'selectionFramesCount') {
+        var count = msg.count !== undefined ? msg.count : 0;
+        rewriterFrameCount = count;
+        var countEl = document.getElementById('rewriterFramesCount');
+        if (countEl) countEl.textContent = count === 1 ? '1 frame selected.' : count + ' frame(s) selected.';
+        syncRewriterRenameButton();
+        return;
+      }
+      if (msg.type === 'parseComponentsResult') {
+        if (msg.error) {
+          detachListContent.innerHTML = '<p class="list-error">' + escapeHtml(msg.error) + '</p>';
+          detachListContent.className = 'list-error';
+          document.getElementById('btnReplaceLocalWithLibrary').style.display = 'none';
+          return;
+        }
+        var local = msg.local || [];
+        var library = msg.library || [];
+        var html = '<div class="parse-components-section"><div class="fill-select-section-label">Library components (' + library.length + ')</div>';
+        if (library.length === 0) {
+          html += '<p class="list-hint list-empty-p">None (add component instances from libraries to the file to see them here)</p>';
+        } else {
+          for (var j = 0; j < library.length; j++) {
+            html += '<div class="cleaner-row parse-component-row" title="Library component"><span class="cleaner-name">' + escapeHtml(library[j].name) + '</span><span class="detach-source">' + escapeHtml(library[j].key) + '</span></div>';
+          }
+        }
+        html += '</div><div class="parse-components-section"><div class="fill-select-section-label">Local components (' + local.length + ')</div>';
+        if (local.length === 0) {
+          html += '<p class="list-hint list-empty-p">None</p>';
+        } else {
+          var libOpts = '<option value="">— Don\'t replace</option>';
+          for (var k = 0; k < library.length; k++) {
+            libOpts += '<option value="' + escapeHtml(library[k].key) + '">' + escapeHtml(library[k].name) + '</option>';
+          }
+          for (var i = 0; i < local.length; i++) {
+            html += '<div class="cleaner-row parse-component-row detach-row" data-id="' + escapeHtml(local[i].id) + '" title="Select on canvas">' +
+              '<span class="cleaner-name detach-name">' + escapeHtml(local[i].name) + '</span>' +
+              '<span class="detach-source">' + escapeHtml(local[i].id) + '</span>' +
+              '<div class="detach-select-wrap"><select class="parse-replace-select detach-replace-select" data-id="' + escapeHtml(local[i].id) + '">' + libOpts + '</select></div></div>';
+          }
+        }
+        html += '</div>';
+        detachListContent.innerHTML = html;
+        detachListContent.className = '';
+        var btnReplaceLib = document.getElementById('btnReplaceLocalWithLibrary');
+        if (btnReplaceLib) {
+          btnReplaceLib.style.display = (local.length > 0 && library.length > 0) ? 'inline-block' : 'none';
+          btnReplaceLib.disabled = false;
+        }
+        return;
+      }
+      if (msg.type === 'detachResult') {
+        var btnReplace = document.getElementById('btnReplaceDetached');
+        var btnReplaceLib = document.getElementById('btnReplaceLocalWithLibrary');
+        if (btnReplaceLib) btnReplaceLib.style.display = 'none';
+        if (msg.error) {
+          detachListContent.textContent = msg.error;
+          detachListContent.className = 'list-error';
+          if (btnReplace) { btnReplace.style.display = 'none'; btnReplace.disabled = true; }
+          lastDetachItems = [];
+          return;
+        }
+        var items = msg.items || [];
+        lastDetachItems = items;
+        if (items.length === 0) {
+          detachListContent.innerHTML = '<p class="list-hint">No detached components found.</p>';
+          detachListContent.className = 'list-empty';
+          if (btnReplace) { btnReplace.style.display = 'none'; btnReplace.disabled = true; }
+          return;
+        }
+        var rows = items.map(function (it) {
+          var opts = '<option value="">— Don\'t replace</option>';
+          var sugs = it.suggestions || [];
+          for (var s = 0; s < sugs.length; s++) {
+            var sel = (s === 0) ? ' selected' : '';
+            opts += '<option value="' + escapeHtml(sugs[s].key) + '"' + sel + '>' + escapeHtml(sugs[s].name) + '</option>';
+          }
+          return '<div class="cleaner-row detach-row" data-id="' + escapeHtml(it.id) + '" title="Select on canvas">' +
+            '<span class="detach-name">' + escapeHtml(it.name) + '</span>' +
+            '<span class="detach-source">' + escapeHtml(it.source || 'Detached') + '</span>' +
+            '<div class="detach-select-wrap"><select class="detach-replace-select" data-id="' + escapeHtml(it.id) + '">' + opts + '</select></div></div>';
+        }).join('');
+        detachListContent.innerHTML = rows;
+        detachListContent.className = '';
+        if (btnReplace) { btnReplace.style.display = 'block'; btnReplace.disabled = false; }
+        return;
+      }
+      if (msg.type === 'replaceDetachDebug') {
+        var el = document.getElementById('detachDebug');
+        if (el) el.textContent = msg.message || '';
+        return;
+      }
+      if (msg.type === 'replaceDetachedResult') {
+        var detachDebugEl = document.getElementById('detachDebug');
+        if (detachDebugEl) detachDebugEl.textContent = '';
+        var btnReplace = document.getElementById('btnReplaceDetached');
+        if (msg.error) {
+          detachListContent.innerHTML = '<p class="list-error">' + escapeHtml(msg.error) + '</p>';
+          detachListContent.className = 'list-error';
+          if (btnReplace) btnReplace.disabled = false;
+          return;
+        }
+        if (msg.replaced !== undefined && msg.replaced > 0) {
+          lastDetachItems = [];
+          detachListContent.innerHTML = '<p class="list-hint">Replaced ' + msg.replaced + ' component(s). Select the frame/section and press «Find detached» again to refresh.</p>';
+          detachListContent.className = 'list-empty';
+          if (btnReplace) { btnReplace.style.display = 'none'; btnReplace.disabled = true; }
+        }
+        return;
+      }
+      if (msg.type === 'commentsResult') {
+        var btnGrab = document.getElementById('btnGrabComments');
+        if (btnGrab) btnGrab.disabled = false;
+        var commentsEl = document.getElementById('commentsListContent');
+        if (!commentsEl) return;
+        if (msg.error) {
+          commentsEl.innerHTML = '<p class="list-error">' + escapeHtml(msg.error) + '</p>';
+          commentsEl.className = 'list-error';
+          return;
+        }
+        var comments = msg.comments || [];
+        if (comments.length === 0) {
+          commentsEl.innerHTML = '<p class="list-hint">No comments on this page.</p>';
+          commentsEl.className = 'list-empty';
+          return;
+        }
+        var html = '';
+        for (var c = 0; c < comments.length; c++) {
+          var com = comments[c];
+          var author = (com.user && (com.user.handle || com.user.nickname || com.user.id)) || 'Unknown';
+          var text = (com.message || '').trim() || '(no text)';
+          var date = com.created_at ? new Date(com.created_at).toLocaleString() : '';
+          html += '<div class="cleaner-row" style="flex-direction: column; align-items: flex-start; gap: 4px;">' +
+            '<span class="cleaner-name">' + escapeHtml(author) + (date ? ' <span style="color: var(--figma-color-text-tertiary); font-size: 11px;">' + escapeHtml(date) + '</span>' : '') + '</span>' +
+            '<span style="font-size: 12px; color: var(--figma-color-text);">' + escapeHtml(text) + '</span></div>';
+        }
+        commentsEl.innerHTML = html;
+        commentsEl.className = '';
+        return;
+      }
+      if (msg.type === 'replaceLocalWithLibraryResult') {
+        var btnReplaceLib = document.getElementById('btnReplaceLocalWithLibrary');
+        if (btnReplaceLib) btnReplaceLib.disabled = false;
+        if (msg.error) {
+          return;
+        }
+        if (msg.replaced !== undefined && msg.replaced > 0) {
+          detachListContent.innerHTML = '<p class="list-hint">Replaced ' + msg.replaced + ' instance(s) with library component(s). Press «Parse components» to refresh.</p>';
+          detachListContent.className = 'list-empty';
+          if (btnReplaceLib) btnReplaceLib.style.display = 'none';
+        }
+        return;
+      }
+      if (msg.type === 'renameFramesResult') {
+        var errEl = document.getElementById('rewriterError');
+        var renameBtn = document.getElementById('btnRenameFrames');
+        if (msg.error) {
+          if (errEl) { errEl.textContent = msg.error; errEl.style.display = 'block'; }
+        } else {
+          if (errEl) errEl.style.display = 'none';
+        }
+        if (renameBtn) renameBtn.disabled = false;
+        requestRewriterFramesCount();
+        syncRewriterRenameButton();
+        return;
+      }
+      if (msg.type === 'cleanerDeleted') {
+        var deleted = msg.deleted || 0;
+        if (pendingDeleteIds && pendingDeleteIds.length) {
+          lastCleanerItems = lastCleanerItems.filter(function (it) { return pendingDeleteIds.indexOf(it.id) === -1; });
+          pendingDeleteIds = null;
+        }
+        renderCleanerList(lastCleanerItems);
+        var btn = document.getElementById('btnDeleteCleaner');
+        if (btn) { btn.disabled = false; btn.textContent = 'Delete'; }
+        return;
+      }
+    });
+
+    setTimeout(function () {
+      parent.postMessage({ pluginMessage: { type: 'getRewriterSettings' } }, '*');
+    }, 0);
+
+    (function resizeHandle() {
+      var PLUGIN_W_MAX = 1200, PLUGIN_H_MAX = 900;
+      var currentW = PLUGIN_W, currentH = PLUGIN_H;
+      var startX, startY, startW, startH, active = false;
+
+      function clamp(w, h) {
+        w = Math.max(PLUGIN_W_MIN, Math.min(PLUGIN_W_MAX, Math.round(w)));
+        h = Math.max(PLUGIN_H_MIN, Math.min(PLUGIN_H_MAX, Math.round(h)));
+        return { w: w, h: h };
+      }
+      function onMove(e) {
+        if (!active) return;
+        var dx = e.clientX - startX, dy = e.clientY - startY;
+        var size = clamp(startW + dx, startH + dy);
+        currentW = size.w;
+        currentH = size.h;
+        parent.postMessage({ pluginMessage: { type: 'resize', width: currentW, height: currentH } }, '*');
+      }
+      function onUp() {
+        active = false;
+        window.removeEventListener('mousemove', onMove);
+        window.removeEventListener('mouseup', onUp);
+        document.body.style.cursor = '';
+        document.body.style.userSelect = '';
+      }
+      var handle = document.getElementById('resizeHandle');
+      if (handle) {
+        handle.addEventListener('mousedown', function (e) {
+          e.preventDefault();
+          active = true;
+          startX = e.clientX;
+          startY = e.clientY;
+          startW = currentW;
+          startH = currentH;
+          document.body.style.cursor = 'nwse-resize';
+          document.body.style.userSelect = 'none';
+          window.addEventListener('mousemove', onMove);
+          window.addEventListener('mouseup', onUp);
+        });
+      }
+      window.getPluginSize = function () { return { width: currentW, height: currentH }; };
+      window.setPluginSize = function (w, h) {
+        var size = clamp(w, h);
+        currentW = size.w;
+        currentH = size.h;
+      };
+    })();
+  </script>
+  <div class="resize-handle" id="resizeHandle" title="Drag to resize"></div>
+</body>
+</html>
