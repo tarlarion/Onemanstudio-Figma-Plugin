@@ -402,7 +402,8 @@
       border: 1px solid var(--border);
       border-radius: var(--radius);
       background: var(--card);
-      overflow: hidden;
+      overflow: visible;
+      flex-shrink: 0;
     }
     .text-llm-panel-header {
       display: flex;
@@ -450,7 +451,40 @@
       transform: rotate(-90deg);
     }
     .text-llm-panel-body {
+      padding: 0;
+      overflow: visible;
+    }
+    .text-llm-panel-body > .text-llm-actions-row {
+      padding: 10px 12px 0;
+      border-top: 1px solid var(--border);
+      margin-top: 0;
+    }
+    .text-llm-panel-body > #llmStatus {
+      padding: 6px 12px 12px;
+      margin-top: 0;
+    }
+    .text-llm-panel-form {
       padding: 10px 12px 12px;
+      overflow: visible;
+    }
+    .text-llm-actions-row {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: nowrap;
+      align-items: stretch;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .text-llm-actions-row .btn-scan,
+    .text-llm-actions-row .btn-ghost {
+      flex: 1 1 0;
+      min-width: 0;
+      width: auto;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 0;
+      white-space: nowrap;
     }
     .text-llm-panel--collapsed .text-llm-panel-body {
       display: none;
@@ -516,6 +550,50 @@
       padding-left: 16px;
       box-sizing: border-box;
       cursor: default;
+    }
+    .text-regenerate-all-bar {
+      flex-shrink: 0;
+      padding: 8px 10px 10px;
+      border-bottom: 1px solid var(--figma-color-border);
+    }
+    .text-regenerate-all-bar .text-regenerate-all-btn {
+      width: 100%;
+      justify-content: center;
+    }
+    .textkv-value-wrap {
+      flex: 1;
+      display: flex;
+      flex-direction: row;
+      align-items: stretch;
+      gap: 6px;
+      min-width: 0;
+    }
+    .textkv-llm-btn {
+      visibility: hidden;
+      flex-shrink: 0;
+      align-self: stretch;
+      padding: 0 8px;
+      margin: 0;
+      border: 1px solid var(--figma-color-border);
+      border-radius: var(--radius);
+      background: var(--figma-color-bg-secondary);
+      color: var(--figma-color-text-secondary);
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .textkv-row:hover .textkv-llm-btn,
+    .textkv-row:focus-within .textkv-llm-btn {
+      visibility: visible;
+    }
+    .textkv-llm-btn:hover:not(:disabled) {
+      background: var(--figma-color-bg-hover);
+      color: var(--figma-color-text);
+    }
+    .textkv-llm-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
     }
     #textValuesError.text-values-error-in-scroll {
       flex-shrink: 0;
@@ -1404,13 +1482,27 @@
             <span class="text-llm-panel-chevron" aria-hidden="true">▼</span>
           </button>
           <div id="textLlmSectionBody" class="text-llm-panel-body">
-          <p class="list-hint" style="margin-bottom: 8px;">Optional: use <a href="https://openrouter.ai/" target="_blank" rel="noopener noreferrer">OpenRouter</a> to suggest semantic keys from the frame screenshot and current text values.</p>
+          <div class="text-llm-panel-form">
+          <p class="list-hint" style="margin-bottom: 8px;">Optional: suggest semantic keys from a frame screenshot and text rows. Choose the LLM backend (OpenRouter, OpenAI, DeepSeek, or Claude), then enter that provider’s API key and model.</p>
           <div style="display: grid; grid-template-columns: 1fr; gap: 8px;">
-            <input id="openRouterApiKey" type="password" placeholder="OpenRouter API key" style="width: 100%; padding: 8px 10px; border: 1px solid var(--figma-color-border); border-radius: var(--radius); background: var(--figma-color-rect); color: var(--figma-color-text);" />
-            <input id="openRouterModel" type="text" value="openai/gpt-4o-mini" placeholder="Model id (e.g. openai/gpt-4o-mini)" style="width: 100%; padding: 8px 10px; border: 1px solid var(--figma-color-border); border-radius: var(--radius); background: var(--figma-color-rect); color: var(--figma-color-text);" />
+            <label for="openRouterProvider" style="font-size: 11px; color: var(--figma-color-text-secondary); margin: 0;">LLM provider</label>
+            <select id="openRouterProvider" style="width: 100%; padding: 8px 10px; border: 1px solid var(--figma-color-border); border-radius: var(--radius); background: var(--figma-color-rect); color: var(--figma-color-text); font-size: 12px;">
+              <option value="openrouter">OpenRouter (any catalog model)</option>
+              <option value="deepseek">DeepSeek</option>
+              <option value="openai">ChatGPT (OpenAI)</option>
+              <option value="claude">Claude</option>
+            </select>
+            <div id="openRouterConnectionBlock" style="display: grid; grid-template-columns: 1fr; gap: 8px; margin-top: 4px; padding-top: 10px; border-top: 1px solid var(--figma-color-border);">
+              <span id="openRouterConnectionHeading" style="font-size: 11px; font-weight: 600; color: var(--figma-color-text); letter-spacing: 0.02em;">Connect to selected model</span>
+              <input id="openRouterApiKey" type="password" placeholder="OpenRouter API key" autocomplete="off" style="width: 100%; padding: 8px 10px; border: 1px solid var(--figma-color-border); border-radius: var(--radius); background: var(--figma-color-rect); color: var(--figma-color-text);" />
+              <label id="openRouterModelLabel" for="openRouterModel" style="font-size: 11px; color: var(--figma-color-text-secondary); margin: 0;">OpenRouter model id</label>
+              <input id="openRouterModel" type="text" value="openai/gpt-4o-mini" placeholder="e.g. openai/gpt-4o-mini" aria-describedby="openRouterConnectionHint" style="width: 100%; padding: 8px 10px; border: 1px solid var(--figma-color-border); border-radius: var(--radius); background: var(--figma-color-rect); color: var(--figma-color-text);" />
+              <p id="openRouterConnectionHint" class="list-hint" style="margin: 0;">Each provider uses its own API (OpenRouter vs OpenAI vs DeepSeek vs Anthropic). Fields switch with the provider; Save stores the active profile.</p>
+            </div>
           </div>
-          <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px;">
-            <button type="button" class="btn-ghost" id="btnSaveOpenRouterSettings">Save OpenRouter settings</button>
+          </div>
+          <div class="text-llm-actions-row" role="group" aria-label="LLM settings actions">
+            <button type="button" class="btn-ghost" id="btnSaveOpenRouterSettings">Save settings</button>
             <button type="button" class="btn-scan" id="btnGenerateSemanticKeys" disabled>Generate semantic keys</button>
           </div>
           <p id="llmStatus" class="list-hint" style="margin-top: 8px; margin-bottom: 0; min-height: 16px;"></p>
@@ -1419,6 +1511,9 @@
         <p id="makeStatus" class="list-hint" style="display: none; margin-top: 0; margin-bottom: 0;"></p>
         <div class="text-results-scroll">
           <p id="textValuesError" class="list-error text-values-error-in-scroll" style="display: none;"></p>
+          <div id="textRegenerateAllBar" class="text-regenerate-all-bar" style="display: none;">
+            <button type="button" class="btn-ghost text-regenerate-all-btn" id="btnRegenerateAllTextLlm" disabled>Regenerate all copy (LLM)</button>
+          </div>
           <div id="textValuesListWrap" class="list-wrap list-wrap-text-kv">
             <div id="textValuesListContent" class="list-hint">Select a frame and press Extract.</div>
           </div>
@@ -1807,6 +1902,7 @@
     };
 
     var textValuesListContent = document.getElementById('textValuesListContent');
+    var textValuesListWrap = document.getElementById('textValuesListWrap');
     var textValuesErrorEl = document.getElementById('textValuesError');
     var btnExtractTextValues = document.getElementById('btnExtractTextValues');
     var btnApplyTextValues = document.getElementById('btnApplyTextValues');
@@ -1833,9 +1929,14 @@
     var btnBackFromMakeSetup = document.getElementById('btnBackFromMakeSetup');
     var makeSetupStatusEl = document.getElementById('makeSetupStatus');
     var openRouterApiKeyInput = document.getElementById('openRouterApiKey');
+    var openRouterProviderSelect = document.getElementById('openRouterProvider');
+    var openRouterConnectionHintEl = document.getElementById('openRouterConnectionHint');
     var openRouterModelInput = document.getElementById('openRouterModel');
+    var openRouterConnectionHeadingEl = document.getElementById('openRouterConnectionHeading');
+    var openRouterModelLabelEl = document.getElementById('openRouterModelLabel');
     var btnSaveOpenRouterSettings = document.getElementById('btnSaveOpenRouterSettings');
     var btnGenerateSemanticKeys = document.getElementById('btnGenerateSemanticKeys');
+    var btnRegenerateAllTextLlm = document.getElementById('btnRegenerateAllTextLlm');
     var llmStatusEl = document.getElementById('llmStatus');
     var textLlmSection = document.getElementById('textLlmSection');
     var textLlmSectionToggle = document.getElementById('textLlmSectionToggle');
@@ -1846,6 +1947,15 @@
     var MAKE_ACTIVE_SCENARIO_ID_KEY = 'makeActiveScenarioIdV1';
     var OPENROUTER_API_KEY_STORAGE_KEY = 'openRouterApiKeyV1';
     var OPENROUTER_MODEL_STORAGE_KEY = 'openRouterModelV1';
+    var OPENROUTER_PROVIDER_STORAGE_KEY = 'openRouterProviderV1';
+    var OPENROUTER_PROFILES_BY_PROVIDER_KEY = 'openRouterProfilesByProviderV1';
+    var openRouterLastActiveProviderId = '';
+    var OPENROUTER_PROVIDER_DEFAULT_MODEL = {
+      openrouter: 'openai/gpt-4o-mini',
+      openai: 'gpt-4o-mini',
+      deepseek: 'deepseek-chat',
+      claude: 'claude-3-5-sonnet-20241022'
+    };
     var LEGACY_OPENAI_API_KEY_STORAGE_KEY = 'openAiApiKeyV1';
     var LEGACY_OPENAI_MODEL_STORAGE_KEY = 'openAiModelV1';
     var TEXT_MODE_STORAGE_KEY = 'textModeV1';
@@ -1855,6 +1965,8 @@
     var makeScenarios = [];
     var activeMakeScenarioId = '';
     var pendingLlmItemsSnapshot = null;
+    var pendingLlmJobType = null;
+    var pendingRegenerateSingleId = null;
 
     function setTextModeButtonState(button, isActive) {
       if (!button) return;
@@ -1991,6 +2103,236 @@
       btnSyncTextToMake.disabled = !(hasRows && hasScenario);
     }
 
+    function getOpenRouterDefaultModelForProvider(providerId) {
+      var p = providerId === 'deepseek' || providerId === 'claude' || providerId === 'openrouter' || providerId === 'openai'
+        ? providerId
+        : 'openrouter';
+      return OPENROUTER_PROVIDER_DEFAULT_MODEL[p] || OPENROUTER_PROVIDER_DEFAULT_MODEL.openrouter;
+    }
+
+    function inferPrimaryProviderForMigrate(legacyModel) {
+      var m = String(legacyModel || '').trim().toLowerCase();
+      if (m.indexOf('openai/') === 0 || m.indexOf('anthropic/') === 0 || m.indexOf('deepseek/') === 0 || m.indexOf('google/') === 0) return 'openrouter';
+      if (m.indexOf('claude-') === 0) return 'claude';
+      if (m.indexOf('gpt-') === 0 || m.indexOf('o1') === 0 || m.indexOf('o3') === 0) return 'openai';
+      if (m.indexOf('deepseek') >= 0) return 'deepseek';
+      return 'openrouter';
+    }
+
+    function openRouterProviderMatchesModelId(providerId, modelId) {
+      if (providerId === 'openrouter') return true;
+      var m = String(modelId || '').trim();
+      var lower = m.toLowerCase();
+      if (!m) return false;
+      if (providerId === 'openai') {
+        if (lower.indexOf('openai/') === 0) return true;
+        return lower.indexOf('/') === -1;
+      }
+      if (providerId === 'deepseek') {
+        if (lower.indexOf('deepseek/') === 0) return true;
+        return lower.indexOf('/') === -1;
+      }
+      if (providerId === 'claude') {
+        if (lower.indexOf('anthropic/') === 0) return true;
+        return lower.indexOf('claude-') === 0 && lower.indexOf('/') === -1;
+      }
+      return false;
+    }
+
+    function openRouterProviderDisplayName(providerId) {
+      if (providerId === 'deepseek') return 'DeepSeek';
+      if (providerId === 'claude') return 'Claude';
+      if (providerId === 'openai') return 'ChatGPT';
+      if (providerId === 'openrouter') return 'OpenRouter';
+      return 'OpenRouter';
+    }
+
+    function setOpenRouterConnectionHint(message, isWarning) {
+      if (!openRouterConnectionHintEl) return;
+      openRouterConnectionHintEl.textContent = message || '';
+      openRouterConnectionHintEl.className = isWarning ? 'list-error' : 'list-hint';
+    }
+
+    function setOpenRouterConnectionHintDefault() {
+      setOpenRouterConnectionHint(
+        'OpenRouter: use a catalog slug (vendor/model). OpenAI, DeepSeek, and Claude: use the native model name from that provider’s API (no OpenRouter slug unless you switch back to OpenRouter).',
+        false
+      );
+    }
+
+    function refreshOpenRouterConnectionHintFromFields() {
+      if (!openRouterProviderSelect || !openRouterModelInput) return;
+      var modelVal = openRouterModelInput.value || '';
+      var sel = openRouterProviderSelect.value;
+      if (!openRouterProviderMatchesModelId(sel, modelVal)) {
+        setOpenRouterConnectionHint(
+          openRouterProviderDisplayName(sel) + ': check the model field — use a native API model id, or an OpenRouter slug only when OpenRouter is selected.',
+          true
+        );
+        return;
+      }
+      setOpenRouterConnectionHintDefault();
+    }
+
+    function isKnownOpenRouterProviderId(providerId) {
+      return providerId === 'openrouter' || providerId === 'openai' || providerId === 'deepseek' || providerId === 'claude';
+    }
+
+    function getOpenRouterProfiles() {
+      try {
+        var raw = localStorage.getItem(OPENROUTER_PROFILES_BY_PROVIDER_KEY);
+        if (!raw) return {};
+        var o = JSON.parse(raw);
+        if (!o || typeof o !== 'object') return {};
+        return o;
+      } catch (_) {
+        return {};
+      }
+    }
+
+    function setOpenRouterProfiles(profiles) {
+      if (!profiles || typeof profiles !== 'object') return;
+      try {
+        localStorage.setItem(OPENROUTER_PROFILES_BY_PROVIDER_KEY, JSON.stringify(profiles));
+      } catch (_) {}
+    }
+
+    function migrateOpenRouterProfilesIfNeeded() {
+      try {
+        if (localStorage.getItem(OPENROUTER_PROFILES_BY_PROVIDER_KEY)) return;
+      } catch (_) {
+        return;
+      }
+      var legacyKey = '';
+      var legacyModel = '';
+      try {
+        legacyKey = localStorage.getItem(OPENROUTER_API_KEY_STORAGE_KEY) || '';
+      } catch (_) {}
+      try {
+        if (!legacyKey) legacyKey = localStorage.getItem(LEGACY_OPENAI_API_KEY_STORAGE_KEY) || '';
+      } catch (_) {}
+      try {
+        legacyModel = localStorage.getItem(OPENROUTER_MODEL_STORAGE_KEY) || '';
+      } catch (_) {}
+      try {
+        if (!legacyModel) legacyModel = localStorage.getItem(LEGACY_OPENAI_MODEL_STORAGE_KEY) || '';
+      } catch (_) {}
+      if (!legacyModel) legacyModel = 'openai/gpt-4o-mini';
+      var primary = inferPrimaryProviderForMigrate(legacyModel);
+      try {
+        var sp = localStorage.getItem(OPENROUTER_PROVIDER_STORAGE_KEY) || '';
+        if (sp === 'openrouter' || sp === 'openai' || sp === 'deepseek' || sp === 'claude') primary = sp;
+      } catch (_) {}
+      var ids = ['openrouter', 'deepseek', 'openai', 'claude'];
+      var profiles = {};
+      for (var i = 0; i < ids.length; i++) {
+        var id = ids[i];
+        profiles[id] = {
+          apiKey: legacyKey,
+          model: id === primary ? legacyModel : getOpenRouterDefaultModelForProvider(id)
+        };
+      }
+      setOpenRouterProfiles(profiles);
+    }
+
+    function persistOpenRouterDraftForProvider(providerId) {
+      if (!isKnownOpenRouterProviderId(providerId)) return;
+      var profiles = getOpenRouterProfiles();
+      if (!profiles[providerId] || typeof profiles[providerId] !== 'object') profiles[providerId] = {};
+      profiles[providerId].apiKey = openRouterApiKeyInput ? String(openRouterApiKeyInput.value || '') : '';
+      profiles[providerId].model = openRouterModelInput ? String(openRouterModelInput.value || '') : '';
+      setOpenRouterProfiles(profiles);
+    }
+
+    function readLegacyOpenRouterApiKeyFallback() {
+      var k = '';
+      try {
+        k = localStorage.getItem(OPENROUTER_API_KEY_STORAGE_KEY) || '';
+      } catch (_) {}
+      try {
+        if (!k) k = localStorage.getItem(LEGACY_OPENAI_API_KEY_STORAGE_KEY) || '';
+      } catch (_) {}
+      return k;
+    }
+
+    function syncOpenRouterConnectionPlaceholders(providerId) {
+      if (!openRouterApiKeyInput || !openRouterModelInput) return;
+      var pid = providerId;
+      if (pid == null || pid === '') {
+        pid = openRouterProviderSelect ? openRouterProviderSelect.value : 'openrouter';
+      }
+      if (!isKnownOpenRouterProviderId(pid)) pid = 'openrouter';
+      var heading = 'Connect to selected model';
+      var apiPh = 'API key';
+      var modelLab = 'Model id';
+      var modelPh = 'e.g. openai/gpt-4o-mini';
+      if (pid === 'openrouter') {
+        heading = 'OpenRouter';
+        apiPh = 'OpenRouter API key';
+        modelLab = 'Model (OpenRouter catalog slug)';
+        modelPh = 'e.g. openai/gpt-4o-mini';
+      } else if (pid === 'openai') {
+        heading = 'OpenAI';
+        apiPh = 'OpenAI API key (sk-…)';
+        modelLab = 'Model (OpenAI API)';
+        modelPh = 'e.g. gpt-4o-mini';
+      } else if (pid === 'deepseek') {
+        heading = 'DeepSeek';
+        apiPh = 'DeepSeek API key';
+        modelLab = 'Model (DeepSeek API)';
+        modelPh = 'e.g. deepseek-chat';
+      } else if (pid === 'claude') {
+        heading = 'Anthropic Claude';
+        apiPh = 'Anthropic API key';
+        modelLab = 'Model (Messages API)';
+        modelPh = 'e.g. claude-3-5-sonnet-20241022';
+      }
+      if (openRouterConnectionHeadingEl) openRouterConnectionHeadingEl.textContent = heading;
+      openRouterApiKeyInput.placeholder = apiPh;
+      if (openRouterModelLabelEl) openRouterModelLabelEl.textContent = modelLab;
+      openRouterModelInput.placeholder = modelPh;
+    }
+
+    function applyOpenRouterProfile(providerId) {
+      if (!openRouterApiKeyInput || !openRouterModelInput) return;
+      if (!isKnownOpenRouterProviderId(providerId)) providerId = 'openrouter';
+      var profiles = getOpenRouterProfiles();
+      var row = profiles[providerId];
+      var apiKey = row && row.apiKey != null ? String(row.apiKey) : '';
+      var model = row && row.model != null ? String(row.model) : '';
+      if (!String(apiKey).trim()) apiKey = readLegacyOpenRouterApiKeyFallback();
+      if (!String(model).trim()) model = getOpenRouterDefaultModelForProvider(providerId);
+      openRouterApiKeyInput.value = apiKey;
+      openRouterModelInput.value = model;
+      syncOpenRouterConnectionPlaceholders(providerId);
+      refreshOpenRouterConnectionHintFromFields();
+    }
+
+    function handleOpenRouterProviderChange() {
+      if (!openRouterProviderSelect || !openRouterModelInput) return;
+      var prev = openRouterLastActiveProviderId;
+      var next = openRouterProviderSelect.value;
+      if (!isKnownOpenRouterProviderId(next)) next = 'openrouter';
+      if (prev && prev !== next) persistOpenRouterDraftForProvider(prev);
+      applyOpenRouterProfile(next);
+      openRouterLastActiveProviderId = next;
+      setOpenRouterConnectionHint(
+        'Showing saved fields for ' + openRouterProviderDisplayName(next) + '. Edit and click Save to store this provider.',
+        false
+      );
+    }
+
+    function handleOpenRouterModelBlur() {
+      if (!openRouterProviderSelect || !openRouterModelInput) return;
+      syncOpenRouterConnectionPlaceholders();
+      refreshOpenRouterConnectionHintFromFields();
+    }
+
+    function initOpenRouterProviderListeners() {
+      if (openRouterProviderSelect) openRouterProviderSelect.addEventListener('change', handleOpenRouterProviderChange);
+      if (openRouterModelInput) openRouterModelInput.addEventListener('blur', handleOpenRouterModelBlur);
+    }
+
     function setLlmStatus(message, isError) {
       if (!llmStatusEl) return;
       llmStatusEl.textContent = message || '';
@@ -1998,55 +2340,53 @@
     }
 
     function loadOpenRouterSettingsFromStorage() {
+      migrateOpenRouterProfilesIfNeeded();
+      var prov = 'openrouter';
       try {
-        if (openRouterApiKeyInput) {
-          var k = localStorage.getItem(OPENROUTER_API_KEY_STORAGE_KEY) || '';
-          if (!k) k = localStorage.getItem(LEGACY_OPENAI_API_KEY_STORAGE_KEY) || '';
-          openRouterApiKeyInput.value = k;
-        }
-      } catch (_) {
-        if (openRouterApiKeyInput) openRouterApiKeyInput.value = '';
-      }
-      try {
-        if (openRouterModelInput) {
-          var m = localStorage.getItem(OPENROUTER_MODEL_STORAGE_KEY) || '';
-          if (!m) m = localStorage.getItem(LEGACY_OPENAI_MODEL_STORAGE_KEY) || '';
-          if (!m) m = 'openai/gpt-4o-mini';
-          openRouterModelInput.value = m;
-        }
-      } catch (_) {
-        if (openRouterModelInput) openRouterModelInput.value = 'openai/gpt-4o-mini';
-      }
+        var sp = localStorage.getItem(OPENROUTER_PROVIDER_STORAGE_KEY) || '';
+        if (sp === 'openrouter' || sp === 'openai' || sp === 'deepseek' || sp === 'claude') prov = sp;
+      } catch (_) {}
+      if (openRouterProviderSelect) openRouterProviderSelect.value = prov;
+      applyOpenRouterProfile(prov);
+      refreshOpenRouterConnectionHintFromFields();
+      openRouterLastActiveProviderId = openRouterProviderSelect ? openRouterProviderSelect.value : '';
     }
 
     function saveOpenRouterSettingsToStorage() {
       var apiKey = openRouterApiKeyInput ? String(openRouterApiKeyInput.value || '').trim() : '';
       var model = openRouterModelInput ? String(openRouterModelInput.value || '').trim() : '';
-      if (!apiKey) throw new Error('OpenRouter API key is required.');
-      if (!model) model = 'openai/gpt-4o-mini';
+      var prov = openRouterProviderSelect && isKnownOpenRouterProviderId(openRouterProviderSelect.value)
+        ? openRouterProviderSelect.value
+        : 'openrouter';
+      if (!apiKey) throw new Error('API key is required.');
+      if (!model) model = getOpenRouterDefaultModelForProvider(prov);
+      persistOpenRouterDraftForProvider(prov);
       try { localStorage.setItem(OPENROUTER_API_KEY_STORAGE_KEY, apiKey); } catch (_) {}
       try { localStorage.setItem(OPENROUTER_MODEL_STORAGE_KEY, model); } catch (_) {}
       if (openRouterModelInput) openRouterModelInput.value = model;
+      try { localStorage.setItem(OPENROUTER_PROVIDER_STORAGE_KEY, prov); } catch (_) {}
+      openRouterLastActiveProviderId = prov;
       return { apiKey: apiKey, model: model };
+    }
+
+    function getActiveLlmProviderId() {
+      var v = openRouterProviderSelect && openRouterProviderSelect.value;
+      if (v === 'openrouter' || v === 'openai' || v === 'deepseek' || v === 'claude') return v;
+      return 'openrouter';
     }
 
     function getOpenRouterSettings() {
       var apiKey = openRouterApiKeyInput ? String(openRouterApiKeyInput.value || '').trim() : '';
       var model = openRouterModelInput ? String(openRouterModelInput.value || '').trim() : '';
-      if (!apiKey) {
-        try { apiKey = localStorage.getItem(OPENROUTER_API_KEY_STORAGE_KEY) || ''; } catch (_) {}
-      }
-      if (!apiKey) {
-        try { apiKey = localStorage.getItem(LEGACY_OPENAI_API_KEY_STORAGE_KEY) || ''; } catch (_) {}
-      }
+      if (!apiKey) apiKey = String(readLegacyOpenRouterApiKeyFallback() || '').trim();
       if (!model) {
         try { model = localStorage.getItem(OPENROUTER_MODEL_STORAGE_KEY) || ''; } catch (_) {}
       }
       if (!model) {
         try { model = localStorage.getItem(LEGACY_OPENAI_MODEL_STORAGE_KEY) || ''; } catch (_) {}
       }
-      if (!model) model = 'openai/gpt-4o-mini';
-      return { apiKey: apiKey, model: model };
+      if (!model) model = getOpenRouterDefaultModelForProvider(getActiveLlmProviderId());
+      return { apiKey: apiKey, model: model, provider: getActiveLlmProviderId() };
     }
 
     function sanitizeSemanticKey(inputKey) {
@@ -2095,16 +2435,277 @@
       return '';
     }
 
+    function parseDataUrlToAnthropicImageSource(dataUrl) {
+      var s = String(dataUrl || '').trim();
+      var m = /^data:([^;]+);base64,(.+)$/i.exec(s);
+      if (!m || !m[2]) throw new Error('Invalid frame image for Claude.');
+      return { type: 'base64', media_type: m[1] || 'image/png', data: m[2] };
+    }
+
+    function extractAnthropicMessageText(data) {
+      if (!data || !Array.isArray(data.content)) return '';
+      for (var i = 0; i < data.content.length; i++) {
+        var b = data.content[i];
+        if (b && b.type === 'text' && typeof b.text === 'string') return b.text.trim();
+      }
+      return '';
+    }
+
+    function stripMarkdownJsonFence(content) {
+      var t = String(content || '').trim();
+      var re = /^```(?:json)?\s*([\s\S]*?)```$/im;
+      var m = re.exec(t);
+      if (m) return m[1].trim();
+      return t;
+    }
+
+    function parseSemanticKeysJsonPayload(textPayload, label) {
+      var raw = stripMarkdownJsonFence(textPayload);
+      var parsed = JSON.parse(raw);
+      if (!parsed || !Array.isArray(parsed.mappings)) throw new Error((label || 'LLM') + ' returned invalid mappings payload.');
+      return parsed;
+    }
+
+    function parseRegeneratedTextJsonPayload(textPayload, label) {
+      var raw = stripMarkdownJsonFence(textPayload);
+      var parsed = JSON.parse(raw);
+      if (!parsed || !Array.isArray(parsed.rows)) throw new Error((label || 'LLM') + ' returned invalid text rows payload.');
+      return parsed;
+    }
+
+    function llmVisionChatWithJsonSchema(o) {
+      var settings = o.settings;
+      var provider = o.provider;
+      var model = o.model;
+      var systemPrompt = o.systemPrompt;
+      var userText = o.userText;
+      var imageDataUrl = o.imageDataUrl;
+      var schema = o.schema;
+      var jsonSchemaName = o.jsonSchemaName;
+      var parsePayload = o.parsePayload;
+      var anthropicJsonTail = o.anthropicJsonTail || '';
+
+      if (provider === 'claude') {
+        var imageSource = parseDataUrlToAnthropicImageSource(imageDataUrl);
+        var claudeBody = {
+          model: model,
+          max_tokens: 8192,
+          system: systemPrompt,
+          messages: [
+            {
+              role: 'user',
+              content: [
+                { type: 'image', source: imageSource },
+                { type: 'text', text: userText + anthropicJsonTail }
+              ]
+            }
+          ]
+        };
+        return fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: {
+            'x-api-key': settings.apiKey,
+            'anthropic-version': '2023-06-01',
+            'content-type': 'application/json'
+          },
+          body: JSON.stringify(claudeBody)
+        }).then(function (res) {
+          return res.json().then(function (data) {
+            if (!res.ok) {
+              var em = data && data.error && data.error.message ? data.error.message : ('Claude request failed (' + res.status + ').');
+              throw new Error(em);
+            }
+            var textPayload = extractAnthropicMessageText(data);
+            if (!textPayload) throw new Error('Claude returned empty response.');
+            return parsePayload(textPayload, 'Claude');
+          });
+        });
+      }
+
+      var body = {
+        model: model,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          {
+            role: 'user',
+            content: [
+              { type: 'text', text: userText },
+              { type: 'image_url', image_url: { url: imageDataUrl } }
+            ]
+          }
+        ],
+        response_format: {
+          type: 'json_schema',
+          json_schema: { name: jsonSchemaName, strict: true, schema: schema }
+        }
+      };
+
+      var url = 'https://openrouter.ai/api/v1/chat/completions';
+      var headers = {
+        'Authorization': 'Bearer ' + settings.apiKey,
+        'Content-Type': 'application/json'
+      };
+      if (provider === 'openrouter') {
+        headers['HTTP-Referer'] = 'https://www.figma.com';
+        headers['X-Title'] = 'OneManStudio Figma Plugin';
+      }
+      if (provider === 'openai') url = 'https://api.openai.com/v1/chat/completions';
+      else if (provider === 'deepseek') url = 'https://api.deepseek.com/chat/completions';
+
+      var errLabel = openRouterProviderDisplayName(provider);
+      return fetch(url, {
+        method: 'POST',
+        headers: headers,
+        body: JSON.stringify(body)
+      }).then(function (res) {
+        return res.json().then(function (data) {
+          if (!res.ok) {
+            var apiMessage = data && data.error && data.error.message ? data.error.message : (errLabel + ' request failed (' + res.status + ').');
+            throw new Error(apiMessage);
+          }
+          var textPayload = extractOpenRouterChatContent(data);
+          if (!textPayload) throw new Error(errLabel + ' returned empty response.');
+          return parsePayload(textPayload, errLabel);
+        });
+      });
+    }
+
+    function buildTextLayerRowsForLlm(rawItems) {
+      var rows = [];
+      for (var r = 0; r < rawItems.length; r++) {
+        var it = rawItems[r] || {};
+        if (!it.id) continue;
+        rows.push({
+          sourceId: String(it.id),
+          figmaLayerName: it.layerName != null ? String(it.layerName) : '',
+          resourceKey: it.key != null ? String(it.key) : '',
+          currentUiCopy: it.value != null ? String(it.value) : ''
+        });
+      }
+      return rows;
+    }
+
+    function requestRegeneratedCopyFromLlm(params) {
+      var settings = getOpenRouterSettings();
+      var provider = settings.provider || getActiveLlmProviderId();
+      if (!settings.apiKey) throw new Error('Save your API key first.');
+      var frameName = params && params.frameName ? String(params.frameName) : 'Frame';
+      var imageDataUrl = params && params.imageDataUrl ? String(params.imageDataUrl) : '';
+      var items = params && Array.isArray(params.items) ? params.items : [];
+      var focusSourceId = params && params.focusSourceId ? String(params.focusSourceId) : '';
+      if (!imageDataUrl) throw new Error('Missing frame image.');
+      if (!items.length) throw new Error('No extracted text items.');
+
+      var defaultModel = getOpenRouterDefaultModelForProvider(provider);
+      var model = settings.model && String(settings.model).trim() ? settings.model : defaultModel;
+
+      var apiItems = items;
+      if (focusSourceId) {
+        apiItems = [];
+        for (var j = 0; j < items.length; j++) {
+          if (items[j] && String(items[j].id) === focusSourceId) {
+            apiItems.push(items[j]);
+            break;
+          }
+        }
+        if (!apiItems.length) throw new Error('Layer not found for regeneration.');
+      }
+
+      var llmRows = buildTextLayerRowsForLlm(apiItems);
+      var schema = {
+        type: 'object',
+        additionalProperties: false,
+        properties: {
+          rows: {
+            type: 'array',
+            items: {
+              type: 'object',
+              additionalProperties: false,
+              properties: {
+                sourceId: { type: 'string' },
+                suggestedText: { type: 'string' },
+                reason: { type: 'string' }
+              },
+              required: ['sourceId', 'suggestedText', 'reason']
+            }
+          }
+        },
+        required: ['rows']
+      };
+
+      var systemPrompt =
+        'You rewrite UI microcopy for a Figma frame. You receive a screenshot plus a JSON list of text layers.\n' +
+        'For every row you must return suggestedText: improved end-user-facing string for that layer only.\n' +
+        '- Keep language, tone, and intent aligned with currentUiCopy unless it is clearly broken; fix grammar, brevity, clarity, and consistency across the frame.\n' +
+        '- Use figmaLayerName and resourceKey as weak context only; the screenshot shows real layout and hierarchy.\n' +
+        '- Do not invent unrelated marketing claims. Do not merge two layers into one row.\n' +
+        '- Return exactly one row per sourceId in the input list, same order is preferred.\n' +
+        '- reason: one short phrase (no copy paste of full suggestedText).\n' +
+        'Return only JSON matching the schema.';
+
+      var userText =
+        'Frame name: ' + frameName + '\n' +
+        (focusSourceId
+          ? 'Regenerate copy for this single layer only. sourceId must be "' + focusSourceId + '". Use currentUiCopy as the primary input to improve.\n'
+          : 'Regenerate copy for every layer in the list below.\n') +
+        'Layers (currentUiCopy is what appears in the design today):\n' +
+        JSON.stringify(llmRows, null, 2);
+
+      return llmVisionChatWithJsonSchema({
+        settings: settings,
+        provider: provider,
+        model: model,
+        systemPrompt: systemPrompt,
+        userText: userText,
+        imageDataUrl: imageDataUrl,
+        schema: schema,
+        jsonSchemaName: 'regenerated_copy_response',
+        parsePayload: parseRegeneratedTextJsonPayload,
+        anthropicJsonTail: '\n\nReturn ONLY valid JSON: {"rows":[{"sourceId":"…","suggestedText":"…","reason":"…"}]}. No markdown code fences.'
+      });
+    }
+
+    function mergeRegeneratedCopyIntoItems(items, rows) {
+      var byId = {};
+      for (var i = 0; i < rows.length; i++) {
+        var r = rows[i] || {};
+        if (r.sourceId != null && r.suggestedText != null) byId[String(r.sourceId)] = String(r.suggestedText);
+      }
+      return (items || []).map(function (item) {
+        var next = { id: item.id, key: item.key, value: item.value, layerName: item.layerName };
+        if (item.id && byId[String(item.id)] !== undefined) next.value = byId[String(item.id)];
+        return next;
+      });
+    }
+
     function requestSemanticKeysFromOpenRouter(params) {
       var settings = getOpenRouterSettings();
-      if (!settings.apiKey) throw new Error('Save OpenRouter API key first.');
+      var provider = settings.provider || getActiveLlmProviderId();
+      if (!settings.apiKey) throw new Error('Save your API key first.');
       var frameName = params && params.frameName ? String(params.frameName) : 'Frame';
       var imageDataUrl = params && params.imageDataUrl ? String(params.imageDataUrl) : '';
       var items = params && Array.isArray(params.items) ? params.items : [];
       if (!imageDataUrl) throw new Error('Missing frame image.');
       if (!items.length) throw new Error('No extracted text items.');
 
-      var model = settings.model || 'openai/gpt-4o-mini';
+      var defaultModel = getOpenRouterDefaultModelForProvider(provider);
+      var model = settings.model && String(settings.model).trim() ? settings.model : defaultModel;
+
+      function buildSemanticKeyLlmRows(rawItems) {
+        var rows = [];
+        for (var r = 0; r < rawItems.length; r++) {
+          var it = rawItems[r] || {};
+          if (!it.id) continue;
+          rows.push({
+            sourceId: String(it.id),
+            figmaLayerName: it.layerName != null ? String(it.layerName) : '',
+            pluginPlaceholderKey: it.key != null ? String(it.key) : '',
+            draftUiCopy: it.value != null ? String(it.value) : ''
+          });
+        }
+        return rows;
+      }
+
       var schema = {
         type: 'object',
         additionalProperties: false,
@@ -2126,58 +2727,55 @@
         required: ['mappings']
       };
 
-      var body = {
-        model: model,
-        messages: [
-          {
-            role: 'system',
-            content: 'You generate stable semantic localization keys for UI copy. Return only JSON that matches the schema exactly.'
-          },
-          {
-            role: 'user',
-            content: [
-              {
-                type: 'text',
-                text: 'Frame name: ' + frameName + '\nSuggest semantic snake_case keys for each row.\nRules: short, readable, context-aware, deterministic.\nRows JSON:\n' + JSON.stringify(items, null, 2)
-              },
-              {
-                type: 'image_url',
-                image_url: { url: imageDataUrl }
-              }
-            ]
-          }
-        ],
-        response_format: {
-          type: 'json_schema',
-          json_schema: {
-            name: 'semantic_key_response',
-            strict: true,
-            schema: schema
-          }
-        }
-      };
+      var llmRows = buildSemanticKeyLlmRows(items);
+      var systemPrompt =
+        'You assign stable i18n / localization RESOURCE KEYS for Figma text layers. Keys describe STRUCTURE and ROLE on the screen — they are not paraphrases of the visible copy.\n' +
+        '\n' +
+        '## Grouping and hierarchy (required mindset)\n' +
+        '- From the frame screenshot and frame name, infer logical REGIONS / COMPONENTS (groups): e.g. hero_block, top_nav, side_menu, footer, pricing_card, form_login, tab_bar, stats_row, modal_header.\n' +
+        '- Almost every suggestedKey should read like a small path: `{group}_{…}` or `{screen_region}_{group}_{…}` — not a lone word like "title" unless the frame is trivial.\n' +
+        '- Repeating UI (menus, nav lists, cards, table rows): use ONE shared prefix for the set, then index or role slots: `nav_item_1_label`, `nav_item_2_label`, `menu_row_3_caption`, `pricing_tier_pro_cta`, `card_feature_a_title`.\n' +
+        '- Large marketing / hero strips: prefer `hero_block_title`, `hero_block_subtitle`, `hero_block_primary_cta`, `hero_block_eyebrow`, `hero_block_trust_line` — not keys built from the headline text.\n' +
+        '- Form-like areas: `form_login_email_label` vs `form_login_email_placeholder`, `form_login_submit_cta` — separate label vs value vs action.\n' +
+        '\n' +
+        '## Abstract keys — hard bans\n' +
+        '- NEVER put draftUiCopy (or substrings, transliterations, slugified sentences, Title_Case words from the copy) into suggestedKey.\n' +
+        '- NEVER "construct" a key by concatenating words taken from the user-visible string (e.g. welcome_back_shop from "Welcome back, shop"). Name the SLOT instead.\n' +
+        '- NEVER use a key that is just the copy with underscores.\n' +
+        '- figmaLayerName: ignore generic names (Text, Label, Frame, Auto layout, Group). Use it only when it clearly encodes structure (e.g. HeroTitle → hero_block_title).\n' +
+        '- pluginPlaceholderKey is an internal index only; do not mirror it in suggestedKey unless no structural name exists.\n' +
+        '\n' +
+        '## Format\n' +
+        '- suggestedKey: lower_snake_case, ASCII letters, digits, underscores only. Prefer 3–6 segments when the layout supports it.\n' +
+        '- Use digits only for ordering / sibling index / tier (item_1, tier_2), never to encode arbitrary copy.\n' +
+        '\n' +
+        '## reason field\n' +
+        '- One short phrase: which group/region + which slot (e.g. "hero — primary heading"). Do not quote draftUiCopy.\n' +
+        '\n' +
+        'Return only JSON matching the schema.';
 
-      return fetch('https://openrouter.ai/api/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': 'Bearer ' + settings.apiKey,
-          'Content-Type': 'application/json',
-          'HTTP-Referer': 'https://www.figma.com',
-          'X-Title': 'OneManStudio Figma Plugin'
-        },
-        body: JSON.stringify(body)
-      }).then(function (res) {
-        return res.json().then(function (data) {
-          if (!res.ok) {
-            var apiMessage = data && data.error && data.error.message ? data.error.message : ('OpenRouter request failed (' + res.status + ').');
-            throw new Error(apiMessage);
-          }
-          var textPayload = extractOpenRouterChatContent(data);
-          if (!textPayload) throw new Error('OpenRouter returned empty response.');
-          var parsed = JSON.parse(textPayload);
-          if (!parsed || !Array.isArray(parsed.mappings)) throw new Error('OpenRouter returned invalid mappings payload.');
-          return parsed;
-        });
+      var userText =
+        'Frame name (screen / flow context): ' + frameName + '\n\n' +
+        'Do this in order:\n' +
+        '1) Scan all rows, then look at the screenshot and name 2–8 logical GROUPS (regions or components) that organize these layers.\n' +
+        '2) Assign each row a suggestedKey nested under a group prefix, abstract and stable if the copy is reworded or translated.\n' +
+        '3) For sets of similar lines (menus, lists, cards), use a shared prefix + index or variant (`…_item_1_title`, `…_item_2_title`, or `…_primary_cta` / `…_secondary_link`) — never bake the row\'s caption into the key.\n' +
+        '\n' +
+        'Output one mapping per row; sourceId must match exactly.\n' +
+        'Rows (draftUiCopy is end-user text — must not appear inside suggestedKey):\n' +
+        JSON.stringify(llmRows, null, 2);
+
+      return llmVisionChatWithJsonSchema({
+        settings: settings,
+        provider: provider,
+        model: model,
+        systemPrompt: systemPrompt,
+        userText: userText,
+        imageDataUrl: imageDataUrl,
+        schema: schema,
+        jsonSchemaName: 'semantic_key_response',
+        parsePayload: parseSemanticKeysJsonPayload,
+        anthropicJsonTail: '\n\nReturn ONLY valid JSON: {"mappings":[{"sourceId":"…","suggestedKey":"…","reason":"…"}]}. No markdown code fences.'
       });
     }
 
@@ -2313,6 +2911,7 @@
     renderMakeScenarioOptions();
     fillMakeSetupFormFromScenario(getActiveMakeScenario());
     loadOpenRouterSettingsFromStorage();
+    initOpenRouterProviderListeners();
     loadTextModeFromStorage();
     initLlmSectionExpandable();
     showTextMainView();
@@ -2412,9 +3011,13 @@
 
     function getTextValuesSnapshotFromInputs() {
       var keyById = {};
+      var layerNameById = {};
       for (var i = 0; i < lastTextItems.length; i++) {
         var src = lastTextItems[i] || {};
-        if (src.id) keyById[src.id] = src.key || '';
+        if (src.id) {
+          keyById[src.id] = src.key || '';
+          if (src.layerName) layerNameById[src.id] = String(src.layerName);
+        }
       }
       var inputs = textValuesListContent ? textValuesListContent.querySelectorAll('input.textkv-input[data-node-id]') : [];
       var out = [];
@@ -2422,11 +3025,13 @@
         var inp = inputs[j];
         var id = inp && inp.dataset ? inp.dataset.nodeId : '';
         if (!id) continue;
-        out.push({
+        var row = {
           id: id,
           key: keyById[id] || '',
           value: inp.value != null ? String(inp.value) : '',
-        });
+        };
+        if (layerNameById[id]) row.layerName = layerNameById[id];
+        out.push(row);
       }
       return out;
     }
@@ -2467,14 +3072,64 @@
       return { applied: applied, skipped: skipped };
     }
 
+    function syncLlmGenerationButtons() {
+      var has = !!(lastTextFrameId && lastTextItems && lastTextItems.length > 0);
+      if (btnGenerateSemanticKeys) btnGenerateSemanticKeys.disabled = !has;
+      if (btnRegenerateAllTextLlm) btnRegenerateAllTextLlm.disabled = !has;
+      var bar = document.getElementById('textRegenerateAllBar');
+      if (bar) bar.style.display = has ? 'block' : 'none';
+    }
+
+    function endLlmPendingUi() {
+      pendingLlmItemsSnapshot = null;
+      pendingLlmJobType = null;
+      pendingRegenerateSingleId = null;
+      if (btnGenerateSemanticKeys) btnGenerateSemanticKeys.textContent = 'Generate semantic keys';
+      if (btnRegenerateAllTextLlm) btnRegenerateAllTextLlm.textContent = 'Regenerate all copy (LLM)';
+      syncLlmGenerationButtons();
+      var rowBtns = textValuesListContent ? textValuesListContent.querySelectorAll('.textkv-llm-btn') : [];
+      for (var i = 0; i < rowBtns.length; i++) rowBtns[i].disabled = false;
+    }
+
+    function beginLlmFrameCapture(jobType, focusSourceId) {
+      try {
+        var snapshot = getTextValuesSnapshotFromInputs();
+        if (!lastTextFrameId) throw new Error('Extract text values first.');
+        if (!snapshot || snapshot.length === 0) throw new Error('No text values to process.');
+        var settings = getOpenRouterSettings();
+        if (!settings.apiKey) throw new Error('Save your API key first.');
+        if (!settings.model) throw new Error('Model is required.');
+        pendingLlmJobType = jobType;
+        pendingRegenerateSingleId = focusSourceId || null;
+        pendingLlmItemsSnapshot = snapshot;
+        if (btnGenerateSemanticKeys) {
+          btnGenerateSemanticKeys.disabled = true;
+          if (jobType === 'semanticKeys') btnGenerateSemanticKeys.textContent = 'Generating…';
+        }
+        if (btnRegenerateAllTextLlm) {
+          btnRegenerateAllTextLlm.disabled = true;
+          if (jobType === 'regenerateText' && !pendingRegenerateSingleId) btnRegenerateAllTextLlm.textContent = 'Working…';
+        }
+        var rowBtns = textValuesListContent ? textValuesListContent.querySelectorAll('.textkv-llm-btn') : [];
+        for (var rb = 0; rb < rowBtns.length; rb++) rowBtns[rb].disabled = true;
+        setLlmStatus('Exporting frame screenshot…', false);
+        parent.postMessage({ pluginMessage: { type: 'captureFrameImageForLlm', frameId: lastTextFrameId } }, '*');
+      } catch (err) {
+        endLlmPendingUi();
+        setLlmStatus(err && err.message ? err.message : 'Failed to start LLM task.', true);
+      }
+    }
+
     function renderTextKeyValues(items) {
       lastTextItems = items || [];
       setTextTransferButtonsState(!!items && items.length > 0);
-      if (btnGenerateSemanticKeys) btnGenerateSemanticKeys.disabled = !(lastTextFrameId && items && items.length > 0);
+      syncLlmGenerationButtons();
       if (!textValuesListContent) return;
 
       if (!items || items.length === 0) {
         if (btnApplyTextValues) btnApplyTextValues.disabled = true;
+        var barEmpty = document.getElementById('textRegenerateAllBar');
+        if (barEmpty) barEmpty.style.display = 'none';
         textValuesListContent.innerHTML = '<p class="list-empty-p" style="margin: 0;">No text layers found.</p>';
         textValuesListContent.className = 'list-empty';
         return;
@@ -2484,13 +3139,17 @@
         var value = it && it.value != null ? String(it.value) : '';
         var id = it && it.id ? String(it.id) : '';
         var key = it && it.key != null ? String(it.key) : '';
+        var layerTitle = it && it.layerName ? 'Figma layer: ' + String(it.layerName) : '';
         var inputId = 'textkv-inp-' + rowIndex;
-        return '<div class="textkv-row" style="display:flex; align-items:center; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--figma-color-border);">' +
+        return '<div class="textkv-row" style="display:flex; align-items:center; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--figma-color-border);"' +
+          (layerTitle ? ' title="' + escapeHtml(layerTitle) + '"' : '') + '>' +
           '<label class="textkv-label" for="' + inputId + '">' +
           escapeHtml(key) + ':</label>' +
+          '<div class="textkv-value-wrap">' +
           '<input id="' + inputId + '" type="text" class="textkv-input" data-node-id="' + escapeHtml(id) + '" value="' + escapeHtml(value) + '" ' +
-          'style="flex: 1; width: 100%; padding: 8px 10px; border: 1px solid var(--figma-color-border); border-radius: var(--radius); background: var(--figma-color-rect); color: var(--figma-color-text); font-size: 12px;" />' +
-          '</div>';
+          'style="flex: 1; width: 100%; min-width: 0; padding: 8px 10px; border: 1px solid var(--figma-color-border); border-radius: var(--radius); background: var(--figma-color-rect); color: var(--figma-color-text); font-size: 12px;" />' +
+          '<button type="button" class="textkv-llm-btn" data-node-id="' + escapeHtml(id) + '" title="Regenerate this text with LLM" aria-label="Regenerate this text with LLM">LLM</button>' +
+          '</div></div>';
       }).join('');
       textValuesListContent.innerHTML = html;
       textValuesListContent.className = '';
@@ -2526,31 +3185,37 @@
       btnSaveOpenRouterSettings.onclick = function () {
         try {
           saveOpenRouterSettingsToStorage();
-          setLlmStatus('OpenRouter settings saved.', false);
+          setLlmStatus('Settings saved.', false);
+          refreshOpenRouterConnectionHintFromFields();
         } catch (err) {
-          setLlmStatus(err && err.message ? err.message : 'Failed to save OpenRouter settings.', true);
+          setLlmStatus(err && err.message ? err.message : 'Failed to save settings.', true);
         }
       };
     }
 
     if (btnGenerateSemanticKeys) {
       btnGenerateSemanticKeys.onclick = function () {
-        try {
-          var snapshot = getTextValuesSnapshotFromInputs();
-          if (!lastTextFrameId) throw new Error('Extract text values first.');
-          if (!snapshot || snapshot.length === 0) throw new Error('No text values to process.');
-          var settings = getOpenRouterSettings();
-          if (!settings.apiKey) throw new Error('Save OpenRouter API key first.');
-          if (!settings.model) throw new Error('Model is required.');
-          pendingLlmItemsSnapshot = snapshot;
-          btnGenerateSemanticKeys.disabled = true;
-          btnGenerateSemanticKeys.textContent = 'Generating…';
-          setLlmStatus('Exporting frame screenshot…', false);
-          parent.postMessage({ pluginMessage: { type: 'captureFrameImageForLlm', frameId: lastTextFrameId } }, '*');
-        } catch (err) {
-          setLlmStatus(err && err.message ? err.message : 'Failed to start semantic key generation.', true);
-        }
+        beginLlmFrameCapture('semanticKeys', null);
       };
+    }
+
+    if (btnRegenerateAllTextLlm) {
+      btnRegenerateAllTextLlm.onclick = function () {
+        beginLlmFrameCapture('regenerateText', null);
+      };
+    }
+
+    if (textValuesListWrap) {
+      textValuesListWrap.addEventListener('click', function (ev) {
+        var t = ev.target;
+        if (!t || !t.closest) return;
+        var btn = t.closest('.textkv-llm-btn');
+        if (!btn || btn.disabled) return;
+        var nid = btn.getAttribute('data-node-id');
+        if (!nid) return;
+        ev.preventDefault();
+        beginLlmFrameCapture('regenerateText', nid);
+      });
     }
 
     if (btnExportTextCsv) {
@@ -3638,17 +4303,37 @@
       }
       if (msg.type === 'frameImageForLlmResult') {
         if (msg.error) {
-          pendingLlmItemsSnapshot = null;
-          if (btnGenerateSemanticKeys) {
-            btnGenerateSemanticKeys.textContent = 'Generate semantic keys';
-            btnGenerateSemanticKeys.disabled = !(lastTextFrameId && lastTextItems && lastTextItems.length > 0);
-          }
           setLlmStatus(msg.error, true);
+          endLlmPendingUi();
           return;
         }
 
         var sourceItems = pendingLlmItemsSnapshot || getTextValuesSnapshotFromInputs();
-        setLlmStatus('Requesting semantic keys from OpenRouter…', false);
+        var job = pendingLlmJobType || 'semanticKeys';
+        var focusId = pendingRegenerateSingleId;
+
+        if (job === 'regenerateText') {
+          setLlmStatus('Regenerating copy (' + openRouterProviderDisplayName(getActiveLlmProviderId()) + ')…', false);
+          requestRegeneratedCopyFromLlm({
+            frameName: msg.frameName || 'Frame',
+            imageDataUrl: msg.imageDataUrl || '',
+            items: sourceItems,
+            focusSourceId: focusId || ''
+          }).then(function (result) {
+            var rows = result && Array.isArray(result.rows) ? result.rows : [];
+            var merged = mergeRegeneratedCopyIntoItems(sourceItems, rows);
+            lastTextItems = merged;
+            renderTextKeyValues(merged);
+            setLlmStatus('Copy updated in the list. Review and click "Apply changes" to write to Figma.', false);
+          }).catch(function (err) {
+            setLlmStatus(err && err.message ? err.message : 'Failed to regenerate copy.', true);
+          }).then(function () {
+            endLlmPendingUi();
+          });
+          return;
+        }
+
+        setLlmStatus('Requesting semantic keys (' + openRouterProviderDisplayName(getActiveLlmProviderId()) + ')…', false);
         requestSemanticKeysFromOpenRouter({
           frameName: msg.frameName || 'Frame',
           imageDataUrl: msg.imageDataUrl || '',
@@ -3663,8 +4348,9 @@
             if (!nextKey) continue;
             mappingById[String(m.sourceId)] = nextKey;
           }
-          var updatedItems = (lastTextItems || []).map(function (item) {
-            var next = { id: item.id, key: item.key, value: item.value };
+          var baseItems = pendingLlmItemsSnapshot || lastTextItems || [];
+          var updatedItems = baseItems.map(function (item) {
+            var next = { id: item.id, key: item.key, value: item.value, layerName: item.layerName };
             if (mappingById[item.id]) next.key = mappingById[item.id];
             return next;
           });
@@ -3674,11 +4360,7 @@
         }).catch(function (err) {
           setLlmStatus(err && err.message ? err.message : 'Failed to generate semantic keys.', true);
         }).then(function () {
-          pendingLlmItemsSnapshot = null;
-          if (btnGenerateSemanticKeys) {
-            btnGenerateSemanticKeys.textContent = 'Generate semantic keys';
-            btnGenerateSemanticKeys.disabled = !(lastTextFrameId && lastTextItems && lastTextItems.length > 0);
-          }
+          endLlmPendingUi();
         });
         return;
       }

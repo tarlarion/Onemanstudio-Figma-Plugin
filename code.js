@@ -110,7 +110,8 @@ function collectTextKeyValuesFromFrame(frameNode) {
     var displayKey = frameName + "_key-" + keyIndex;
 
     var value = n.characters != null ? String(n.characters) : "";
-    items.push({ id: n.id, key: displayKey, value: value });
+    var layerName = typeof n.name === "string" && n.name.trim() ? n.name.trim() : "";
+    items.push({ id: n.id, key: displayKey, value: value, layerName: layerName });
   }
   return items;
 }
