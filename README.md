@@ -135,7 +135,7 @@ Use to view Figma comments attached to nodes on the current page.
 - Uses `figma.fileKey` when available, or a pasted file key/URL.
 - Calls `GET https://api.figma.com/v1/files/{fileKey}/comments`.
 - Filters comments to nodes found on `figma.currentPage`.
-- Stores the token in iframe `localStorage` under `figmaTokenV1`.
+- Stores the token in iframe `localStorage` under `figma_plugin_token`.
 
 ### Text workflows
 
@@ -156,17 +156,26 @@ Use when editing copy, exporting localization rows, or preparing text for Make.
 - Manual mode lets the user edit values and apply changes back to matching text
   nodes inside the extracted frame.
 - Fonts are loaded before writes where Figma exposes a range font.
-- CSV export writes `id,key,value`.
+- CSV export writes `id,key,value`; it does not include `layerName`.
 - JSON export writes `{ "frameId": "...", "items": [...] }`.
 - Imports accept:
   - CSV with `value` and at least one of `id` or `key`.
   - JSON array, or object with an `items` array.
 - Imports update only the UI rows first; the user must click **Apply changes**
   to write text back to Figma.
+- **Apply changes** sends only `{ id, value }`. Edited or generated keys remain
+  UI/export/Make metadata; they do not rename Figma layers or write plugin data.
 
 ### LLM-assisted text workflows
 
 LLM mode uses a frame screenshot plus extracted text rows.
+
+1. Select one frame and click **Extract text values**.
+2. Open **LLM mode**, choose a provider, enter a vision-capable model and API
+   key, then click **Save settings**.
+3. Generate semantic keys, regenerate all copy, or focus/hover a row and use its
+   **LLM** button.
+4. Review the editable rows, then click **Apply changes** to update Figma copy.
 
 - Supported provider selector values:
   - `openrouter` -> `https://openrouter.ai/api/v1/chat/completions`
@@ -179,12 +188,23 @@ LLM mode uses a frame screenshot plus extracted text rows.
   - DeepSeek: `deepseek-chat`
   - Claude: `claude-3-5-sonnet-20241022`
 - **Generate semantic keys** asks the provider for lower-snake-case resource
-  keys that describe screen structure and role, not visible copy.
+  keys that describe screen structure and role, not visible copy. Keys are
+  sanitized and de-duplicated before the list is updated.
 - **Regenerate all copy (LLM)** and per-row **LLM** buttons ask the provider for
   improved copy. Results update the editable list only; users must review and
   click **Apply changes**.
+- Manual/LLM mode controls only the visibility of provider settings. Once rows
+  are extracted, batch regeneration and row **LLM** actions remain available in
+  manual mode; the row action appears on row hover or keyboard focus.
 - The main runtime exports the frame as a PNG data URL at scale `1` before the
-  UI calls the provider.
+  UI calls the provider. Per-row regeneration still sends the complete frame
+  screenshot, but includes only the selected row in the text payload.
+- OpenRouter, OpenAI, and DeepSeek receive an OpenAI-compatible request with a
+  strict `json_schema` response format. Claude uses the Messages API and relies
+  on prompt-enforced JSON instead.
+- Model/provider compatibility is shown as a warning only; saving is blocked
+  only when the API key is empty. Use a model that accepts image input and the
+  provider's request format.
 
 Provider profiles are stored in iframe `localStorage`:
 
@@ -197,6 +217,10 @@ Provider profiles are stored in iframe `localStorage`:
 | `openAiApiKeyV1`, `openAiModelV1` | Legacy migration fallbacks. |
 | `textModeV1` | `manual` or `llm`. |
 | `textLlmSectionExpandedV1` | Collapsed/expanded LLM settings state. |
+
+Each provider has a separate API key/model profile. Switching providers
+persists the draft fields for the previous provider; **Save settings** also
+updates the active-provider and legacy fallback keys.
 
 ### Make webhook sync
 
@@ -302,8 +326,19 @@ re-imported.
 - **Native LLM providers fail.** Add the provider domain to
   `networkAccess.allowedDomains` and reload the development plugin. OpenRouter
   is the only LLM domain allowlisted today.
+- **LLM request fails after changing selection.** LLM actions use the frame id
+  captured by the last extraction. Re-select the intended frame and extract
+  again.
+- **Provider accepts the key but rejects the request.** Confirm the model id is
+  native to the selected provider and supports image input plus the required
+  JSON response behavior. The settings warning does not block incompatible
+  combinations.
+- **Row LLM action is missing.** Hover the row or focus one of its controls.
+  The action can also be used while the panel is in manual mode.
 - **LLM output did not update Figma.** LLM results update the editable list
   first. Click **Apply changes** to write to text nodes.
+- **Semantic keys did not rename layers.** Keys are list/export/Make metadata.
+  Applying changes writes text values only.
 - **Make sync button stays disabled.** Extract text rows first and ensure an
   active Make scenario exists in `makeScenariosV1`.
 - **Make secret validation never fires.** The optional secret is stored with the
